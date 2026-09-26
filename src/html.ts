@@ -43,7 +43,7 @@ function deviceBadge(device: string) {
 }
 function page(body: string, email: string, layout = "") {
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LLM Session Search</title><link rel="icon" type="image/svg+xml" href="/favicon.svg"><style>
-  :root{font-family:system-ui,sans-serif;color:#202938;background:#f5f6f8;color-scheme:light}
+  :root{font-family:system-ui,sans-serif;color:#202938;background:#fff;color-scheme:light}
   *{box-sizing:border-box}body{max-width:1028px;margin:0 auto;padding:24px}
   header{display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:24px}
   h1{font-size:24px;margin:0}h1 a{color:#172d49;text-decoration:none}a{color:#2056ab}
