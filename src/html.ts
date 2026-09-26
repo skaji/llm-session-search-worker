@@ -24,6 +24,26 @@ function timestamp(ms: number) {
   );
   return `<time datetime="${date.toISOString()}">${parts.year}/${parts.month}/${parts.day} ${parts.hour}:${parts.minute}:${parts.second} JST</time>`;
 }
+const relativeTime = new Intl.RelativeTimeFormat("en", { numeric: "always" });
+function relativeTimestamp(ms: number, now: number) {
+  const seconds = Math.max(0, Math.floor((now - ms) / 1000));
+  let label = "just now";
+  const units = [
+    ["year", 365 * 24 * 60 * 60],
+    ["month", 30 * 24 * 60 * 60],
+    ["week", 7 * 24 * 60 * 60],
+    ["day", 24 * 60 * 60],
+    ["hour", 60 * 60],
+    ["minute", 60],
+  ] as const;
+  for (const [unit, duration] of units) {
+    if (seconds >= duration) {
+      label = relativeTime.format(-Math.floor(seconds / duration), unit);
+      break;
+    }
+  }
+  return `<time datetime="${new Date(ms).toISOString()}">${label}</time>`;
+}
 function deviceStyle(device: string) {
   return device === "imac2024"
     ? "imac"
@@ -84,6 +104,7 @@ export function searchPage(
   email: string,
   history: string[] = [],
 ) {
+  const now = Date.now();
   const next = new URL(url);
   if (result.next_offset !== null)
     next.searchParams.set("offset", String(result.next_offset));
@@ -101,7 +122,7 @@ export function searchPage(
     `<div class="search-layout"><form class="search-form" action="/search" method="post"><input name="q" aria-label="Search" value="${escape(url.searchParams.get("q") ?? "")}"><input type="hidden" name="device" value="${escape(selectedDevice)}"><button>Search</button></form>
   ${history.length ? `<aside class="history" aria-label="Recent searches"><div class="history-heading"><h2>Recent searches</h2><form action="/history/clear" method="post"><button>Clear history</button></form></div><ul>${history.map((query) => `<li><form action="/search" method="post"><button name="q" value="${escape(query)}">${escape(query)}</button></form></li>`).join("")}</ul></aside>` : `<aside class="history history-empty" aria-label="Recent searches"><div class="history-heading"><h2>Recent searches</h2></div><p class="meta">Your searches will appear here.</p></aside>`}
   <main class="search-results"><nav class="device-filters" aria-label="Filter by device">${filters}</nav>
-  ${result.results.map((s) => `<article><div class="session-meta">${deviceBadge(s.device)}<span class="meta">${escape(s.source)}${s.archived ? " · archived" : ""}</span><span class="meta">${timestamp(s.updated_at_ms)}</span></div><h2><a href="/sessions/${s.id}?after=${Math.max(0, s.line - 1)}#line-${s.line}">${escape(s.title || s.source_id)}</a></h2><p class="excerpt">${escape(s.snippet)}</p></article>`).join("") || "<p>No sessions found.</p>"}
+  ${result.results.map((s) => `<article><div class="session-meta">${deviceBadge(s.device)}<span class="meta">${escape(s.source)}${s.archived ? " · archived" : ""}</span><span class="meta">${relativeTimestamp(s.updated_at_ms, now)}</span></div><h2><a href="/sessions/${s.id}?after=${Math.max(0, s.line - 1)}#line-${s.line}">${escape(s.title || s.source_id)}</a></h2><p class="excerpt">${escape(s.snippet)}</p></article>`).join("") || "<p>No sessions found.</p>"}
   ${result.next_offset !== null ? `<nav><a href="${escape(next.pathname + next.search)}">Next page →</a></nav>` : ""}</main></div>`,
     email,
     "search-page",
