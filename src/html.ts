@@ -42,7 +42,7 @@ function deviceBadge(device: string) {
   return `<span class="device-badge device-${style}"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round">${icon}</svg>${escape(device)}</span>`;
 }
 function page(body: string, email: string, layout = "") {
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Session search</title><link rel="icon" type="image/svg+xml" href="/favicon.svg"><style>
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LLM Session Search</title><link rel="icon" type="image/svg+xml" href="/favicon.svg"><style>
   :root{font-family:system-ui,sans-serif;color:#202938;background:#f5f6f8;color-scheme:light}
   *{box-sizing:border-box}body{max-width:1028px;margin:0 auto;padding:24px}
   header{display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:24px}
@@ -75,7 +75,7 @@ function page(body: string, email: string, layout = "") {
   @media(max-width:700px){body{padding:16px}.search-form{grid-template-columns:minmax(0,1fr)}label:first-child{grid-column:1/-1}button{grid-column:1/-1}article{padding:16px}.session-meta{gap:8px}h1{font-size:22px}.device-filters{gap:6px}.device-filters a{padding:4px 6px;font-size:13px}.device-filters .device-badge{padding:4px 5px;font-size:12px}}
   @media(max-width:340px){body{padding:12px}.search-form{grid-template-columns:minmax(0,1fr)}.account{font-size:13px}}
 
-  </style></head><body class="${layout}"><header><h1><a href="/">Session search</a></h1><div class="account"><small>${escape(email)}</small><a href="/cdn-cgi/access/logout">Log out</a></div></header>${body}</body></html>`;
+  </style></head><body class="${layout}"><header><h1><a href="/">LLM Session Search</a></h1><div class="account"><small>${escape(email)}</small><a href="/cdn-cgi/access/logout">Log out</a></div></header>${body}</body></html>`;
 }
 export function searchPage(
   url: URL,
