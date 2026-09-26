@@ -94,7 +94,7 @@ function page(body: string, email: string, layout = "") {
   .message-source{margin:0}.message:target{outline:2px solid #689bed;outline-offset:6px}
   .message-controls{display:flex;gap:20px;align-items:center;flex-wrap:wrap;margin:20px 0}
   .message-controls a{display:inline-flex;align-items:center;min-height:44px}
-  .markdown-toggle{display:flex;align-items:center;gap:8px;min-height:44px;font-size:14px;cursor:pointer}.markdown-toggle input{width:16px;height:16px;min-height:0;padding:0;margin:0;accent-color:#2056ab;cursor:pointer}
+  .markdown-toggle{margin-left:auto;display:flex;align-items:center;gap:8px;min-height:44px;font-size:14px;cursor:pointer}.markdown-toggle input{width:16px;height:16px;min-height:0;padding:0;margin:0;accent-color:#2056ab;cursor:pointer}
   .markdown{font-size:14px;line-height:1.75;overflow-wrap:anywhere;min-width:0}
   .markdown>:first-child{margin-top:0}.markdown>:last-child{margin-bottom:0}
   .markdown :is(h1,h2,h3,h4,h5,h6){margin:24px 0 10px;line-height:1.45}.markdown h1{font-size:21px}.markdown h2{font-size:19px}.markdown h3{font-size:17px}
