@@ -217,6 +217,9 @@ by the main configuration; its source is retained as `src/probe.js`.
 
 ## CLI releases
 
+`llm-session-sync -version` prints the release version (for example, `0.1.0`).
+Plain `go build` builds report `dev`. This command does not require CLI configuration.
+
 Pushing a version tag such as `v0.1.0` runs the release workflow. After Go tests
 pass, GoReleaser creates a GitHub Release with these archives and `checksums.txt`:
 

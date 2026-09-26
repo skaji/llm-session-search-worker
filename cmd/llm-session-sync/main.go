@@ -21,6 +21,8 @@ import (
 	"golang.org/x/term"
 )
 
+var version = "dev"
+
 var validDevice = regexp.MustCompile(`^[a-zA-Z0-9_.-]{1,128}$`)
 
 func main() {
@@ -90,6 +92,7 @@ func run() error {
 		_, _ = fmt.Fprintln(flags.Output(), "Usage: llm-session-sync [sync|configure|login|search|show] [options]\nWith no command, configure if needed and sync once. Place flags before search words or session ID.")
 		flags.PrintDefaults()
 	}
+	showVersion := flags.Bool("version", false, "Print version and exit")
 	daemon := flags.Bool("daemon", false, "Run periodic sync in the background")
 	daemonStatus := flags.Bool("daemon-status", false, "Show daemon and token status")
 	daemonStop := flags.Bool("daemon-stop", false, "Stop the background daemon")
@@ -121,6 +124,10 @@ func run() error {
 		if errors.Is(err, flag.ErrHelp) {
 			return nil
 		}
+		return err
+	}
+	if *showVersion {
+		_, err := fmt.Fprintln(os.Stdout, version)
 		return err
 	}
 	if command != "search" && command != "show" && flags.NArg() != 0 {
