@@ -204,7 +204,6 @@ originating computer; the message endpoint makes local file access unnecessary.
 ## Development and tests
 
 ```sh
-npm run db:local
 npm run dev                     # 127.0.0.1:8790, separate from the local app's 8787
 npm run typecheck
 npm test                        # Worker + Go CLI + daemon integration, synthetic data
@@ -215,6 +214,9 @@ go build ./...
 go test ./...
 golangci-lint run ./...
 ```
+
+`npm run dev` automatically applies pending migrations to the local D1 database
+before starting the server. It does not modify the remote database.
 
 `npm run dev` sets an `access.dev` identity from `settings.json` solely for local development.
 It is not deployed as an authentication bypass. Use a separate CLI data directory
