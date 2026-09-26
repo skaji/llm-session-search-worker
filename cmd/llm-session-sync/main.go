@@ -7,7 +7,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"log"
 	"net/url"
 	"os"
 	"os/signal"
@@ -308,7 +307,6 @@ func syncOnce(ctx context.Context, config syncer.Config, dataDir, codexHome, cla
 		return syncErr
 	}
 	if os.Getenv(childEnv) == "1" {
-		log.Printf("Sync complete: %d sessions, %d changed, %d records, %d deleted, %d requests", stats.Sessions, stats.Changed, stats.Records, stats.Deleted, stats.Requests)
 		return nil
 	}
 	return json.NewEncoder(os.Stdout).Encode(stats)

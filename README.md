@@ -114,7 +114,8 @@ llm-session-sync -daemon -interval 5m
 
 The daemon writes `~/.llm-session-search-worker/app.pid` and appends logs to
 `~/.llm-session-search-worker/app.log`. A PID-file lock prevents duplicate
-daemons. Token expiry or authentication rejection is recorded in the log.
+daemons. Startup, shutdown, and sync errors (including token expiry or authentication
+rejection) are logged; successful periodic syncs produce no log output.
 The daemon reads the configuration before each sync, so `configure` or `login`
 can replace the token without a restart. It does not renew tokens automatically.
 `-daemon-status` checks local expiration and, for an unexpired token, asks the

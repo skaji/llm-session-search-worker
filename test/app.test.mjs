@@ -281,10 +281,10 @@ test("Go CLI sync and daemon work against the Worker", async () => {
     await run("-daemon-stop", "-data-dir", configDir);
     output = await run("-daemon-status", "-data-dir", configDir);
     assert.match(output.stdout, /stopped/);
-    assert.match(
-      await read(join(configDir, "app.log"), "utf8"),
-      /Sync complete/,
-    );
+    const log = await read(join(configDir, "app.log"), "utf8");
+    assert.match(log, /Daemon started/);
+    assert.match(log, /Daemon stopped/);
+    assert.doesNotMatch(log, /Sync complete/);
     await rm(source);
     output = await run("-prune", ...options);
     assert.equal(JSON.parse(output.stdout).Deleted, 1);
