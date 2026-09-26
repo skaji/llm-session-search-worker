@@ -214,3 +214,23 @@ Legacy SQL probes now use `wrangler.probe.jsonc` and the disposable playground
 D1 only. Run them with `npm run probe:d1` or `npm run probe:d1:remote`. They delete
 fixtures in that disposable database. The legacy probe Worker is not deployed
 by the main configuration; its source is retained as `src/probe.js`.
+
+## CLI releases
+
+Pushing a version tag such as `v0.1.0` runs the release workflow. After Go tests
+pass, GoReleaser creates a GitHub Release with these archives and `checksums.txt`:
+
+- `llm-session-sync-darwin-arm64.tar.gz`
+- `llm-session-sync-linux-amd64.tar.gz`
+- `llm-session-sync-linux-arm64.tar.gz`
+
+Each archive contains the CLI, README, and example settings. Local settings and
+credentials are not included. The workflow uses the built-in `GITHUB_TOKEN`;
+no Cloudflare credentials are needed. It does not deploy the Worker.
+
+To validate packaging locally without publishing:
+
+```sh
+goreleaser check
+goreleaser release --snapshot --clean
+```
