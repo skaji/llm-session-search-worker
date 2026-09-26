@@ -62,19 +62,18 @@ function page(body: string, email: string, layout = "") {
   .device-filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:16px 0}
   .device-filters a{display:inline-flex;align-items:center;min-height:44px;padding:4px 10px;border:1px solid #c7d1df;border-radius:9px;text-decoration:none;background:white;font-size:14px}
   .device-filters a[aria-current="true"]{outline:2px solid #172d49;outline-offset:1px}
-  article{background:white;padding:20px;margin:14px 0;border:1px solid #dde3eb;border-radius:10px}
+  article{padding:14px 0;margin:0;border-top:1px solid #dde3eb}
   h2{font-size:18px;line-height:1.45;margin:0 0 10px;overflow-wrap:anywhere}
   .meta{font-size:13px;color:#59667a;overflow-wrap:anywhere;line-height:1.6}.session-meta{display:flex;gap:8px 12px;align-items:center;flex-wrap:wrap;margin:0 0 12px}
   .device-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border-radius:6px;background:#edf0f4;color:#425069;font-size:13px;font-weight:700;white-space:nowrap}
   .device-badge.device-imac{background:#e6efff;color:#174b8d}.device-badge.device-mba{background:#dcf4ec;color:#076550}.device-badge svg{width:18px;height:18px;flex-shrink:0}
   .role-badge{display:inline-block;padding:3px 9px;border-radius:6px;background:#edf0f4;color:#425069;font-weight:700}.role-user{background:#e6efff;color:#174b8d}.role-assistant{background:#f0e8ff;color:#63439a}
   time{white-space:nowrap;font-variant-numeric:tabular-nums}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:14px/1.7 ui-monospace,monospace;margin-bottom:0}.excerpt{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.65;margin-bottom:0}
-  .search-results article{background:transparent;padding:14px 0;margin:0;border:0;border-top:1px solid #dde3eb;border-radius:0}
   .search-results .session-meta{margin-bottom:6px}.search-results h2{margin-bottom:6px}.search-results .excerpt{margin-top:6px}
   nav{margin:24px 0}nav a,.read-start{display:inline-flex;align-items:center;min-height:44px}article:target{border-color:#2056ab}
   button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #689bed;outline-offset:3px}
   @media(max-width:900px){.search-layout{grid-template-columns:minmax(0,1fr);grid-template-areas:"form" "history" "results"}.search-layout>.history{position:static;max-height:none;padding:0;border:0;background:transparent;margin:16px 0}.search-layout>.history ul{display:flex}.search-layout>.history.history-empty{display:none}}
-  @media(max-width:700px){body{padding:16px}.search-form{grid-template-columns:minmax(0,1fr)}label:first-child{grid-column:1/-1}button{grid-column:1/-1}article{padding:16px}.session-meta{gap:8px}h1{font-size:22px}.device-filters{gap:6px}.device-filters a{padding:4px 6px;font-size:13px}.device-filters .device-badge{padding:4px 5px;font-size:12px}}
+  @media(max-width:700px){body{padding:16px}.search-form{grid-template-columns:minmax(0,1fr)}label:first-child{grid-column:1/-1}button{grid-column:1/-1}.session-meta{gap:8px}h1{font-size:22px}.device-filters{gap:6px}.device-filters a{padding:4px 6px;font-size:13px}.device-filters .device-badge{padding:4px 5px;font-size:12px}}
   @media(max-width:340px){body{padding:12px}.search-form{grid-template-columns:minmax(0,1fr)}.account{font-size:13px}}
 
   </style></head><body class="${layout}"><header><h1><a href="/">LLM Session Search</a></h1><div class="account"><small>${escape(email)}</small><a href="/cdn-cgi/access/logout">Log out</a></div></header>${body}</body></html>`;
