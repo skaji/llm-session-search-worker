@@ -53,7 +53,7 @@ function page(body: string, email: string, layout = "") {
   .search-layout>.search-form{grid-area:form;margin-top:0}.search-results{grid-area:results;min-width:0}
   .search-layout>.history{grid-area:history;min-width:0;margin:0;padding:16px;background:white;border:1px solid #dde3eb;border-radius:10px;position:sticky;top:24px;max-height:calc(100vh - 48px);overflow:auto}
   .search-layout>.history ul{display:grid}.search-layout>.history li button{width:100%}.history-heading{flex-wrap:wrap}
-  .search-form{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr) auto;gap:12px;margin:24px 0 12px}
+  .search-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;margin:24px 0 12px}
   label{display:grid;gap:6px;font-size:13px;min-width:0}input,button{font:inherit;font-size:16px;padding:10px 12px;border:1px solid #bec9d8;border-radius:8px;min-height:44px;min-width:0;width:100%}
   input{background:white;color:#202938}button{background:#2056ab;color:white;cursor:pointer;align-self:end}
   .history{margin:16px 0}.history-heading{display:flex;align-items:center;gap:16px;justify-content:space-between}.history-heading h2{font-size:14px;margin:0;color:#59667a}
@@ -99,7 +99,7 @@ export function searchPage(
     })
     .join("");
   return page(
-    `<div class="search-layout"><form class="search-form" action="/search" method="post">${field("q", 'Search words or "a phrase"')}${field("cwd", "Working directory")}<input type="hidden" name="device" value="${escape(selectedDevice)}"><button>Search</button></form>
+    `<div class="search-layout"><form class="search-form" action="/search" method="post">${field("q", 'Search words or "a phrase"')}<input type="hidden" name="device" value="${escape(selectedDevice)}"><button>Search</button></form>
   ${history.length ? `<aside class="history" aria-label="Recent searches"><div class="history-heading"><h2>Recent searches</h2><form action="/history/clear" method="post"><button>Clear history</button></form></div><ul>${history.map((query) => `<li><form action="/search" method="post"><button name="q" value="${escape(query)}">${escape(query)}</button></form></li>`).join("")}</ul></aside>` : `<aside class="history history-empty" aria-label="Recent searches"><div class="history-heading"><h2>Recent searches</h2></div><p class="meta">Your searches will appear here.</p></aside>`}
   <main class="search-results"><nav class="device-filters" aria-label="Filter by device">${filters}</nav>
   <p class="meta">Words are ANDed across each session. Empty search shows recent sessions. All times are JST.</p>
