@@ -69,6 +69,8 @@ function page(body: string, email: string, layout = "") {
   .device-badge.device-imac{background:#e6efff;color:#174b8d}.device-badge.device-mba{background:#dcf4ec;color:#076550}.device-badge svg{width:18px;height:18px;flex-shrink:0}
   .role-badge{display:inline-block;padding:3px 9px;border-radius:6px;background:#edf0f4;color:#425069;font-weight:700}.role-user{background:#e6efff;color:#174b8d}.role-assistant{background:#f0e8ff;color:#63439a}
   time{white-space:nowrap;font-variant-numeric:tabular-nums}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:14px/1.7 ui-monospace,monospace;margin-bottom:0}.excerpt{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.65;margin-bottom:0}
+  .search-results article{background:transparent;padding:14px 0;margin:0;border:0;border-top:1px solid #dde3eb;border-radius:0}
+  .search-results .session-meta{margin-bottom:6px}.search-results h2{margin-bottom:6px}.search-results .excerpt{margin-top:6px}
   nav{margin:24px 0}nav a,.read-start{display:inline-flex;align-items:center;min-height:44px}article:target{border-color:#2056ab}
   button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #689bed;outline-offset:3px}
   @media(max-width:900px){.search-layout{grid-template-columns:minmax(0,1fr);grid-template-areas:"form" "history" "results"}.search-layout>.history{position:static;max-height:none;padding:0;border:0;background:transparent;margin:16px 0}.search-layout>.history ul{display:flex}.search-layout>.history.history-empty{display:none}}
@@ -103,7 +105,7 @@ export function searchPage(
   ${history.length ? `<aside class="history" aria-label="Recent searches"><div class="history-heading"><h2>Recent searches</h2><form action="/history/clear" method="post"><button>Clear history</button></form></div><ul>${history.map((query) => `<li><form action="/search" method="post"><button name="q" value="${escape(query)}">${escape(query)}</button></form></li>`).join("")}</ul></aside>` : `<aside class="history history-empty" aria-label="Recent searches"><div class="history-heading"><h2>Recent searches</h2></div><p class="meta">Your searches will appear here.</p></aside>`}
   <main class="search-results"><nav class="device-filters" aria-label="Filter by device">${filters}</nav>
   <p class="meta">Words are ANDed across each session. Empty search shows recent sessions. All times are JST.</p>
-  ${result.results.map((s) => `<article><div class="session-meta">${deviceBadge(s.device)}<span class="meta">${escape(s.source)}${s.archived ? " · archived" : ""}</span><span class="meta">${timestamp(s.updated_at_ms)}</span></div><h2><a href="/sessions/${s.id}?after=${Math.max(0, s.line - 1)}#line-${s.line}">${escape(s.title || s.source_id)}</a></h2><div class="meta">${escape(s.cwd)}</div><p class="excerpt">${escape(s.snippet)}</p></article>`).join("") || "<p>No sessions found.</p>"}
+  ${result.results.map((s) => `<article><div class="session-meta">${deviceBadge(s.device)}<span class="meta">${escape(s.source)}${s.archived ? " · archived" : ""}</span><span class="meta">${timestamp(s.updated_at_ms)}</span></div><h2><a href="/sessions/${s.id}?after=${Math.max(0, s.line - 1)}#line-${s.line}">${escape(s.title || s.source_id)}</a></h2><p class="excerpt">${escape(s.snippet)}</p></article>`).join("") || "<p>No sessions found.</p>"}
   ${result.next_offset !== null ? `<nav><a href="${escape(next.pathname + next.search)}">Next page →</a></nav>` : ""}</main></div>`,
     email,
     "search-page",
