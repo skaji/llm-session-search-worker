@@ -69,7 +69,7 @@ function page(body: string, email: string, layout = "") {
   .device-badge.device-imac{background:#e6efff;color:#174b8d}.device-badge.device-mba{background:#dcf4ec;color:#076550}.device-badge svg{width:18px;height:18px;flex-shrink:0}
   .role-badge{display:inline-block;padding:3px 9px;border-radius:6px;background:#edf0f4;color:#425069;font-weight:700}.role-user{background:#e6efff;color:#174b8d}.role-assistant{background:#f0e8ff;color:#63439a}
   time{white-space:nowrap;font-variant-numeric:tabular-nums}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:14px/1.7 ui-monospace,monospace;margin-bottom:0}.excerpt{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.65;margin-bottom:0}
-  .search-results .session-meta{margin-bottom:6px}.search-results h2{margin-bottom:6px}.search-results .excerpt{margin-top:6px}
+  .search-results .session-meta{margin-bottom:6px}.search-results h2{margin-bottom:6px}.search-results h2 a{text-decoration:none}.search-results .excerpt{margin-top:6px}
   nav{margin:24px 0}nav a,.read-start{display:inline-flex;align-items:center;min-height:44px}article:target{border-color:#2056ab}
   button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #689bed;outline-offset:3px}
   @media(max-width:900px){.search-layout{grid-template-columns:minmax(0,1fr);grid-template-areas:"form" "history" "results"}.search-layout>.history{position:static;max-height:none;padding:0;border:0;background:transparent;margin:16px 0}.search-layout>.history ul{display:flex}.search-layout>.history.history-empty{display:none}}
