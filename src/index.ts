@@ -1,3 +1,4 @@
+import detailScript from "../dist/detail.txt";
 import markdownScript from "../dist/markdown.txt";
 import {
   detail,
@@ -47,13 +48,21 @@ export default {
           throw new HTTPError(403, "Cross-site mutation denied");
       }
       if (request.method === "GET") {
-        if (url.pathname === "/assets/markdown.js")
-          return new Response(markdownScript, {
-            headers: {
-              ...headers,
-              "Content-Type": "text/javascript; charset=utf-8",
+        if (
+          url.pathname === "/assets/markdown.js" ||
+          url.pathname === "/assets/detail.js"
+        )
+          return new Response(
+            url.pathname === "/assets/markdown.js"
+              ? markdownScript
+              : detailScript,
+            {
+              headers: {
+                ...headers,
+                "Content-Type": "text/javascript; charset=utf-8",
+              },
             },
-          });
+          );
         if (url.pathname === "/favicon.svg")
           return new Response(favicon, {
             headers: { ...headers, "Content-Type": "image/svg+xml" },

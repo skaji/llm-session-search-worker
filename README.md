@@ -259,7 +259,8 @@ Session pages show user messages in blue bubbles aligned to the right and
 assistant messages on the left. Role labels and source line numbers are hidden;
 search links still jump to the matching message.
 
-Messages use plain text by default. Use the Markdown toggle or add `markdown=1`
+Search results open session pages with `markdown=1`. Use the Markdown checkbox
+or add `markdown=1`
 to a session URL to render Markdown, including tables and fenced code blocks.
 `markdown=0` (or no parameter) keeps plain text. Pagination and the link back to
 the beginning preserve this setting. Markdown is rendered in the browser to

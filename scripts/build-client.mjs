@@ -1,10 +1,11 @@
 import { build } from "esbuild";
 
 await build({
-  entryPoints: ["client/markdown.js"],
+  entryPoints: ["client/markdown.js", "client/detail.js"],
   bundle: true,
   minify: true,
   platform: "browser",
   format: "iife",
-  outfile: "dist/markdown.txt",
+  outdir: "dist",
+  outExtension: { ".js": ".txt" },
 });
