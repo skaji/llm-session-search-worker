@@ -85,8 +85,6 @@ export function searchPage(
   email: string,
   history: string[] = [],
 ) {
-  const field = (name: string, label: string) =>
-    `<label>${label}<input name="${name}" value="${escape(url.searchParams.get(name) ?? "")}"></label>`;
   const next = new URL(url);
   if (result.next_offset !== null)
     next.searchParams.set("offset", String(result.next_offset));
@@ -101,7 +99,7 @@ export function searchPage(
     })
     .join("");
   return page(
-    `<div class="search-layout"><form class="search-form" action="/search" method="post">${field("q", 'Search words or "a phrase"')}<input type="hidden" name="device" value="${escape(selectedDevice)}"><button>Search</button></form>
+    `<div class="search-layout"><form class="search-form" action="/search" method="post"><input name="q" aria-label="Search" value="${escape(url.searchParams.get("q") ?? "")}"><input type="hidden" name="device" value="${escape(selectedDevice)}"><button>Search</button></form>
   ${history.length ? `<aside class="history" aria-label="Recent searches"><div class="history-heading"><h2>Recent searches</h2><form action="/history/clear" method="post"><button>Clear history</button></form></div><ul>${history.map((query) => `<li><form action="/search" method="post"><button name="q" value="${escape(query)}">${escape(query)}</button></form></li>`).join("")}</ul></aside>` : `<aside class="history history-empty" aria-label="Recent searches"><div class="history-heading"><h2>Recent searches</h2></div><p class="meta">Your searches will appear here.</p></aside>`}
   <main class="search-results"><nav class="device-filters" aria-label="Filter by device">${filters}</nav>
   <p class="meta">Words are ANDed across each session. Empty search shows recent sessions. All times are JST.</p>
