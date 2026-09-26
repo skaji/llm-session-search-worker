@@ -46,7 +46,7 @@ function page(body: string, email: string, layout = "") {
   :root{font-family:system-ui,sans-serif;color:#202938;background:#fff;color-scheme:light}
   *{box-sizing:border-box}body{max-width:1028px;margin:0 auto;padding:24px}
   header{display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:24px}
-  h1{font-size:24px;margin:0}h1 a{color:#172d49;text-decoration:none}a{color:#2056ab}
+  h1{font-size:24px;margin:0}h1 a{color:#172d49;text-decoration:none}
   .account{font-size:14px;overflow-wrap:anywhere}.account small{display:block;color:#657085}
   .search-page{max-width:1300px}
   .search-layout{display:grid;grid-template-columns:260px minmax(0,1fr);grid-template-rows:auto 1fr;grid-template-areas:"history form" "history results";gap:0 28px;align-items:start}
@@ -73,8 +73,8 @@ function page(body: string, email: string, layout = "") {
   nav{margin:24px 0}nav a,.read-start{display:inline-flex;align-items:center;min-height:44px}article:target{border-color:#2056ab}
   button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #689bed;outline-offset:3px}
   @media(max-width:900px){.search-layout{grid-template-columns:minmax(0,1fr);grid-template-areas:"form" "history" "results"}.search-layout>.history{position:static;max-height:none;padding:0;border:0;background:transparent;margin:16px 0}.search-layout>.history ul{display:flex}.search-layout>.history.history-empty{display:none}}
-  @media(max-width:700px){body{padding:16px}.search-form{grid-template-columns:minmax(0,1fr)}label:first-child{grid-column:1/-1}button{grid-column:1/-1}.session-meta{gap:8px}h1{font-size:22px}.device-filters{gap:6px}.device-filters a{padding:4px 6px;font-size:13px}.device-filters .device-badge{padding:4px 5px;font-size:12px}}
-  @media(max-width:340px){body{padding:12px}.search-form{grid-template-columns:minmax(0,1fr)}.account{font-size:13px}}
+  @media(max-width:700px){body{padding:16px}.search-layout{grid-template-areas:"form" "results"}.search-layout>.history{display:none}.search-form button{background:white;color:#202938}.session-meta{gap:8px}h1{font-size:22px}.device-filters{gap:6px}.device-filters a{padding:4px 6px;font-size:13px}.device-filters .device-badge{padding:4px 5px;font-size:12px}}
+  @media(max-width:340px){body{padding:12px}.account{font-size:13px}}
 
   </style></head><body class="${layout}"><header><h1><a href="/">LLM Session Search</a></h1><div class="account"><small>${escape(email)}</small><a href="/cdn-cgi/access/logout">Log out</a></div></header>${body}</body></html>`;
 }
