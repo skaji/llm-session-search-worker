@@ -43,8 +43,7 @@ function deviceBadge(device: string) {
 }
 function page(body: string, email: string, layout = "") {
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LLM Session Search</title><link rel="icon" type="image/svg+xml" href="/favicon.svg"><style>
-  @font-face{font-family:"Session Mono";src:local("Osaka-Mono"),local("Hiragino Sans Mono W3"),local("Hiragino Sans Mono W6"),local("Menlo"),local("SF Mono")}
-  :root{--session-font:"Session Mono",ui-monospace,monospace;font-family:var(--session-font);color:#202938;background:#fff;color-scheme:light}
+  :root{font-family:system-ui,sans-serif;color:#202938;background:#fff;color-scheme:light}
   *{box-sizing:border-box}body{max-width:1028px;margin:0 auto;padding:24px}
   header{display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:24px}
   h1{font-size:24px;margin:0}h1 a{color:#172d49;text-decoration:none}a{color:#2056ab}
@@ -69,7 +68,7 @@ function page(body: string, email: string, layout = "") {
   .device-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border-radius:6px;background:#edf0f4;color:#425069;font-size:13px;font-weight:700;white-space:nowrap}
   .device-badge.device-imac{background:#e6efff;color:#174b8d}.device-badge.device-mba{background:#dcf4ec;color:#076550}.device-badge svg{width:18px;height:18px;flex-shrink:0}
   .role-badge{display:inline-block;padding:3px 9px;border-radius:6px;background:#edf0f4;color:#425069;font-weight:700}.role-user{background:#e6efff;color:#174b8d}.role-assistant{background:#f0e8ff;color:#63439a}
-  time{white-space:nowrap;font-variant-numeric:tabular-nums}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:14px/1.7 var(--session-font);margin-bottom:0}.excerpt{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.65;margin-bottom:0}
+  time{white-space:nowrap;font-variant-numeric:tabular-nums}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:14px/1.7 ui-monospace,monospace;margin-bottom:0}.excerpt{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.65;margin-bottom:0}
   .search-results .session-meta{margin-bottom:6px}.search-results h2{margin-bottom:6px}.search-results h2 a{text-decoration:none}.search-results .excerpt{margin-top:6px}
   nav{margin:24px 0}nav a,.read-start{display:inline-flex;align-items:center;min-height:44px}article:target{border-color:#2056ab}
   button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #689bed;outline-offset:3px}
