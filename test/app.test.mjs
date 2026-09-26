@@ -11,6 +11,7 @@ before(async () => {
     write: false,
     format: "esm",
     platform: "browser",
+    loader: { ".txt": "text" },
   });
   const options = {
     modules: true,
@@ -406,4 +407,37 @@ test("form submissions preserve Origin and still reject opaque or foreign origin
     });
     assert.equal(response.status, status);
   }
+});
+
+test("Markdown assets require Access and session pages opt in to the browser renderer", async () => {
+  for (const instance of [denied, anonymous]) {
+    assert.equal(
+      (await instance.dispatchFetch("https://example.com/assets/markdown.js"))
+        .status,
+      403,
+    );
+  }
+  const asset = await mf.dispatchFetch(
+    "https://example.com/assets/markdown.js",
+  );
+  assert.equal(asset.status, 200);
+  assert.match(asset.headers.get("Content-Type"), /text\/javascript/);
+  assert.ok((await asset.text()).length > 0);
+  await post([{ line: 1, role: "user", text: "**Hello**" }], {
+    ...session,
+    source_id: "markdown-test",
+  });
+  const { results } = await get("/api/v1/search?q=Hello");
+  const id = results.find((s) => s.source_id === "markdown-test").id;
+  const response = await mf.dispatchFetch(
+    `https://example.com/sessions/${id}?markdown=1`,
+  );
+  assert.match(
+    response.headers.get("Content-Security-Policy"),
+    /script-src 'self'/,
+  );
+  const html = await response.text();
+  assert.ok(html.includes('<script src="/assets/markdown.js" defer></script>'));
+  assert.ok(html.includes('<pre class="message-source">**Hello**</pre>'));
+  assert.ok(!html.includes("<strong>Hello</strong>"));
 });

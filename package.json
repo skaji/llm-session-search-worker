@@ -12,14 +12,21 @@
     "db:remote": "node scripts/wrangler.mjs d1 migrations apply DB --remote",
     "probe:d1": "node scripts/check-d1.mjs --local",
     "probe:d1:remote": "node scripts/check-d1.mjs --remote",
-    "probe:worker": "node scripts/check-worker.mjs"
+    "probe:worker": "node scripts/check-worker.mjs",
+    "build:client": "node scripts/build-client.mjs",
+    "pretest": "npm run build:client"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260926.1",
     "esbuild": "^0.28.2",
+    "linkedom": "^0.18.13",
     "miniflare": "^5.20260925.0-alpha",
     "prettier": "^3.9.9",
     "typescript": "^7.0.2",
     "wrangler": "^4.138.0"
+  },
+  "dependencies": {
+    "micromark": "^4.0.3",
+    "micromark-extension-gfm": "^3.0.0"
   }
 }

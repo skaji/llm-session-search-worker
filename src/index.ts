@@ -1,3 +1,4 @@
+import markdownScript from "../dist/markdown.txt";
 import {
   detail,
   numberParam,
@@ -16,7 +17,7 @@ const headers = {
   // Preserve Origin on form POSTs without sending search URLs in Referer.
   "Referrer-Policy": "strict-origin",
   "Content-Security-Policy":
-    "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'",
+    "default-src 'none'; script-src 'self'; img-src 'self'; style-src 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'",
 };
 const json = (value: unknown, status = 200) =>
   Response.json(value, { status, headers });
@@ -46,6 +47,13 @@ export default {
           throw new HTTPError(403, "Cross-site mutation denied");
       }
       if (request.method === "GET") {
+        if (url.pathname === "/assets/markdown.js")
+          return new Response(markdownScript, {
+            headers: {
+              ...headers,
+              "Content-Type": "text/javascript; charset=utf-8",
+            },
+          });
         if (url.pathname === "/favicon.svg")
           return new Response(favicon, {
             headers: { ...headers, "Content-Type": "image/svg+xml" },
@@ -77,7 +85,7 @@ export default {
           );
           return match[1]
             ? json(result)
-            : html(detailPage(result, identity.email));
+            : html(detailPage(result, identity.email, url));
         }
       }
       if (request.method === "POST" && url.pathname === "/search") {

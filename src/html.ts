@@ -89,7 +89,23 @@ function page(body: string, email: string, layout = "") {
   .meta{font-size:13px;color:#59667a;overflow-wrap:anywhere;line-height:1.6}.session-meta{display:flex;gap:8px 12px;align-items:center;flex-wrap:wrap;margin:0 0 12px}
   .device-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border-radius:6px;background:#edf0f4;color:#425069;font-size:13px;white-space:nowrap}
   .device-badge.device-imac{background:#ffedd5;color:#9a3412}.device-badge.device-mba{background:#fef9c3;color:#854d0e}.device-badge svg{width:18px;height:18px;flex-shrink:0}
-  .role-badge{display:inline-block;padding:3px 9px;border-radius:6px;background:#edf0f4;color:#425069}.role-user{background:#e6efff;color:#174b8d}.role-assistant{background:#f0e8ff;color:#63439a}
+  .message{border:0;padding:0;margin:28px 0;min-width:0}
+  .message-user{width:fit-content;max-width:85%;margin-left:auto;padding:18px 22px;border-radius:20px;background:#e8f3ff}
+  .message-source{margin:0}.message:target{outline:2px solid #689bed;outline-offset:6px}
+  .message-controls{display:flex;gap:20px;align-items:center;flex-wrap:wrap;margin:20px 0}
+  .message-controls a{display:inline-flex;align-items:center;min-height:44px}
+  .markdown{font-size:14px;line-height:1.75;overflow-wrap:anywhere;min-width:0}
+  .markdown>:first-child{margin-top:0}.markdown>:last-child{margin-bottom:0}
+  .markdown :is(h1,h2,h3,h4,h5,h6){margin:24px 0 10px;line-height:1.45}.markdown h1{font-size:21px}.markdown h2{font-size:19px}.markdown h3{font-size:17px}
+  .markdown p,.markdown :is(ul,ol){margin:12px 0}.markdown :is(ul,ol){padding-left:25px}
+  .markdown code{padding:2px 5px;border-radius:4px;background:#f0f2f5;font:0.92em/1.6 ui-monospace,monospace}
+  .markdown pre{max-width:100%;padding:14px;overflow-x:auto;white-space:pre;overflow-wrap:normal;background:#f6f7f9;border:1px solid #e6e9ee;border-radius:6px}
+  .markdown pre code{padding:0;background:none}.markdown blockquote{margin:14px 0;padding:1px 16px;border-left:3px solid #cbd5e1;color:#59667a}
+  .markdown .table-scroll{max-width:100%;overflow-x:auto;margin:14px 0}.markdown table{border-collapse:collapse;min-width:100%;width:max-content}
+  .markdown :is(th,td){min-width:100px;max-width:340px;padding:8px 12px;border:1px solid #dde3eb;text-align:left;vertical-align:top}.markdown th{background:#f6f7f9}
+  .markdown [align="center"]{text-align:center}.markdown [align="right"]{text-align:right}.markdown img{max-width:100%;height:auto}
+  @media(max-width:700px){.message-user{max-width:95%;padding:14px 16px;border-radius:16px}}
+
   time{white-space:nowrap;font-variant-numeric:tabular-nums}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:14px/1.7 ui-monospace,monospace;margin-bottom:0}.excerpt{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.65;margin-bottom:0}
   .search-results .session-meta{margin-bottom:6px}.search-results h2{margin-bottom:6px}.search-results h2 a{text-decoration:none}.search-results .excerpt{margin-top:6px}
   nav{margin:24px 0}nav a,.read-start{display:inline-flex;align-items:center;min-height:44px}article:target{border-color:#2056ab}
@@ -137,12 +153,24 @@ export function detailPage(
     next_after: number | null;
   },
   email: string,
+  url = new URL(`https://localhost/sessions/${result.session.id}`),
 ) {
   const s = result.session;
+  const markdown = url.searchParams.get("markdown") === "1";
+  const toggle = new URL(url);
+  toggle.searchParams.set("markdown", markdown ? "0" : "1");
+  const start = new URL(url);
+  start.searchParams.delete("after");
+  start.hash = "";
+  const next = new URL(url);
+  next.searchParams.set("after", String(result.next_after));
+  next.hash = "";
+  const href = (link: URL) => escape(link.pathname + link.search + link.hash);
   return page(
-    `<div class="session-meta">${deviceBadge(s.device)}<span class="meta">${escape(s.source)}${s.archived ? " · archived" : ""}</span><span class="meta">${timestamp(s.updated_at_ms)}</span></div><h2>${escape(s.title || s.source_id)}</h2><p class="meta">${escape(s.cwd)}<br>${escape(s.path)}</p><a class="read-start" href="/sessions/${s.id}">Read from the beginning</a>
-  ${result.records.map((r) => `<article id="line-${r.line}"><div class="meta"><span class="role-badge role-${r.role === "user" ? "user" : r.role === "assistant" ? "assistant" : "other"}">${escape(r.role)}</span> · line ${r.line}</div><pre>${escape(r.text)}</pre></article>`).join("") || "<p>No messages on this page.</p>"}
-  ${result.next_after !== null ? `<nav><a href="/sessions/${s.id}?after=${result.next_after}">Next messages →</a></nav>` : ""}`,
+    `<div class="session-meta">${deviceBadge(s.device)}<span class="meta">${escape(s.source)}${s.archived ? " · archived" : ""}</span><span class="meta">${timestamp(s.updated_at_ms)}</span></div><h2>${escape(s.title || s.source_id)}</h2><p class="meta">${escape(s.cwd)}<br>${escape(s.path)}</p><div class="message-controls"><a href="${href(start)}">Read from the beginning</a><a href="${href(toggle)}">Markdown: ${markdown ? "on" : "off"}</a></div>
+  <main id="messages">${result.records.map((r) => `<article id="line-${r.line}" class="message${r.role === "user" ? " message-user" : ""}" aria-label="${escape(r.role)} message"><pre class="message-source">${escape(r.text)}</pre></article>`).join("") || "<p>No messages on this page.</p>"}</main>
+  ${result.next_after !== null ? `<nav><a href="${href(next)}">Next messages →</a></nav>` : ""}
+  ${markdown ? '<script src="/assets/markdown.js" defer></script>' : ""}`,
     email,
   );
 }
