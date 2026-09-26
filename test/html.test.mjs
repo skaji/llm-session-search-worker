@@ -66,3 +66,31 @@ test("search timestamps use relative units while session details keep JST", (t) 
     ),
   );
 });
+
+test("missing message timestamps are shown as unknown", () => {
+  const session = {
+    id: 1,
+    device: "imac2024",
+    source: "codex",
+    source_id: "missing-time",
+    title: "Missing timestamp",
+    cwd: "/test",
+    path: "/test/session.jsonl",
+    archived: 0,
+    updated_at_ms: 0,
+    line: 1,
+    snippet: "",
+  };
+  const pages = [
+    searchPage(
+      new URL("https://example.com/"),
+      { results: [session], next_offset: null },
+      "user@example.com",
+    ),
+    detailPage({ session, records: [], next_after: null }, "user@example.com"),
+  ];
+  for (const html of pages) {
+    assert.ok(html.includes("Unknown update time"));
+    assert.ok(!html.includes("<time"));
+  }
+});

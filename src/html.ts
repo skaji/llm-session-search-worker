@@ -18,6 +18,7 @@ const jst = new Intl.DateTimeFormat("en-GB", {
   hourCycle: "h23",
 });
 function timestamp(ms: number) {
+  if (ms === 0) return "Unknown update time";
   const date = new Date(ms);
   const parts = Object.fromEntries(
     jst.formatToParts(date).map((p) => [p.type, p.value]),
@@ -26,6 +27,7 @@ function timestamp(ms: number) {
 }
 const relativeTime = new Intl.RelativeTimeFormat("en", { numeric: "always" });
 function relativeTimestamp(ms: number, now: number) {
+  if (ms === 0) return "Unknown update time";
   const seconds = Math.max(0, Math.floor((now - ms) / 1000));
   let label = "just now";
   const units = [

@@ -103,6 +103,18 @@ With no command, the CLI syncs once. Default input directories are `$CODEX_HOME`
 (or `~/.codex`) and `$CLAUDE_CONFIG_DIR` (or `~/.claude`). Codex archived sessions
 are included. Claude subagent files are excluded, matching the local app.
 
+Session update times use the latest timestamp among the displayed user and
+assistant messages. Hidden events and file modification times do not affect
+them. If no displayed message has a valid timestamp, the API returns
+`updated_at_ms: 0` and the UI shows "Unknown update time".
+
+To update previously synced timestamps, upgrade the CLI on each source device
+and run a normal sync (restart any running daemon to use the new binary).
+Every sync rereads the local logs and uploads changed metadata, preserving
+session IDs and URLs; no database migration or `-rebuild` is needed. Sessions
+whose source logs are no longer available cannot be corrected from the cloud
+copy alone, because individual message timestamps are not stored there.
+
 ```sh
 llm-session-sync -dry-run             # Parse and count; no uploads or state changes
 llm-session-sync                      # Sync once

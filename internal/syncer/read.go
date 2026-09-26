@@ -72,7 +72,7 @@ func ReadDocuments(codexHome, claudeHome, device string) ([]Document, error) {
 }
 
 func readDocument(f sessionFile, device string) (Document, error) {
-	doc := Document{Session: Session{Device: device, Source: f.source, SourceID: f.id, Title: f.title, Path: f.path, UpdatedAtMS: f.info.ModTime().UnixMilli()}, Records: []Record{}}
+	doc := Document{Session: Session{Device: device, Source: f.source, SourceID: f.id, Title: f.title, Path: f.path}, Records: []Record{}}
 	if f.archived {
 		doc.Session.Archived = 1
 	}
@@ -101,10 +101,10 @@ func readDocument(f sessionFile, device string) (Document, error) {
 			if e.title != "" && (e.forceTitle || doc.Session.Title == "") {
 				doc.Session.Title = e.title
 			}
-			for _, t := range e.timestamps {
-				updated = max(updated, t.UnixMilli())
-			}
 			if e.text != "" && (e.role == "user" || e.role == "assistant") {
+				for _, t := range e.timestamps {
+					updated = max(updated, t.UnixMilli())
+				}
 				doc.Records = append(doc.Records, Record{Line: lineNumber, Role: e.role, Text: &e.text})
 			}
 		}
@@ -115,8 +115,6 @@ func readDocument(f sessionFile, device string) (Document, error) {
 			return doc, readErr
 		}
 	}
-	if updated > 0 {
-		doc.Session.UpdatedAtMS = updated
-	}
+	doc.Session.UpdatedAtMS = updated
 	return doc, nil
 }
