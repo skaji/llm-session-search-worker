@@ -1,0 +1,25 @@
+{
+  "name": "llm-session-search-worker",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/wrangler.mjs dev --ip 127.0.0.1 --port 8790",
+    "deploy": "node scripts/wrangler.mjs deploy",
+    "typecheck": "tsc",
+    "test": "node --test test/*.test.mjs",
+    "format": "prettier --write src/**/*.ts test/*.mjs",
+    "db:local": "node scripts/wrangler.mjs d1 migrations apply DB --local",
+    "db:remote": "node scripts/wrangler.mjs d1 migrations apply DB --remote",
+    "probe:d1": "node scripts/check-d1.mjs --local",
+    "probe:d1:remote": "node scripts/check-d1.mjs --remote",
+    "probe:worker": "node scripts/check-worker.mjs"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260926.1",
+    "esbuild": "^0.28.2",
+    "miniflare": "^5.20260925.0-alpha",
+    "prettier": "^3.9.9",
+    "typescript": "^7.0.2",
+    "wrangler": "^4.138.0"
+  }
+}

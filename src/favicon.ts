@@ -1,0 +1,2 @@
+// Two conversation lines and a search lens, readable at small sizes.
+export const favicon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="15" fill="#172d49"/><path d="M15 20h25M15 30h16" stroke="#fff" stroke-width="6" stroke-linecap="round"/><circle cx="38" cy="39" r="10" fill="none" stroke="#67d6be" stroke-width="5"/><path d="m46 47 8 8" stroke="#67d6be" stroke-width="6" stroke-linecap="round"/></svg>`;

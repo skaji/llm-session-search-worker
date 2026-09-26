@@ -1,0 +1,12 @@
+node_modules/
+.wrangler/
+.env*
+.dev.vars*
+results/
+/bin/
+
+/cmd/llm-session-sync/llm-session-sync
+/cmd/llm-session-sync/llm-session-sync.exe
+
+/settings.json
+/wrangler.local.json

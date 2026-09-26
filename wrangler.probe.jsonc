@@ -1,0 +1,18 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "llm-session-search-probe",
+  "compatibility_date": "2026-09-26",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "llm-session-search-playground",
+      "database_id": "0e728acc-10df-4e80-98e6-cfbb51e4ab01"
+    }
+  ],
+  "main": "src/probe.js",
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  },
+  "preview_urls": false
+}
