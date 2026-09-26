@@ -46,7 +46,7 @@ function page(body: string, email: string, layout = "") {
   :root{font-family:system-ui,sans-serif;color:#202938;background:#fff;color-scheme:light}
   *{box-sizing:border-box}body{max-width:1028px;margin:0 auto;padding:24px}
   header{display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:24px}
-  h1{font-size:24px;margin:0}h1 a{color:#172d49;text-decoration:none}
+  h1{font-size:24px;margin:0}h1 a{color:#172d49;text-decoration:none}a{color:#2056ab}
   .account{font-size:14px;overflow-wrap:anywhere}.account small{display:block;color:#657085}
   .search-page{max-width:1300px}
   .search-layout{display:grid;grid-template-columns:260px minmax(0,1fr);grid-template-rows:auto 1fr;grid-template-areas:"history form" "history results";gap:0 28px;align-items:start}
@@ -55,7 +55,7 @@ function page(body: string, email: string, layout = "") {
   .search-layout>.history ul{display:grid}.search-layout>.history li button{width:100%}.history-heading{flex-wrap:wrap}
   .search-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;margin:24px 0 12px}
   label{display:grid;gap:6px;font-size:13px;min-width:0}input,button{font:inherit;font-size:16px;padding:10px 12px;border:1px solid #bec9d8;border-radius:8px;min-height:44px;min-width:0;width:100%}
-  input{background:white;color:#202938}button{background:#2056ab;color:white;cursor:pointer;align-self:end}
+  input{background:white;color:#202938}button{background:white;color:#202938;cursor:pointer;align-self:end}
   .history{margin:16px 0}.history-heading{display:flex;align-items:center;gap:16px;justify-content:space-between}.history-heading h2{font-size:14px;margin:0;color:#59667a}
   .history form{margin:0}.history ul{display:flex;flex-wrap:wrap;gap:8px;padding:0;margin:8px 0;list-style:none}.history li{max-width:100%}
   .history button{background:white;color:#2056ab;width:auto;text-align:left;overflow-wrap:anywhere;font-size:14px}.history-heading button{border:0;background:transparent;font-size:13px;white-space:nowrap}
@@ -73,7 +73,7 @@ function page(body: string, email: string, layout = "") {
   nav{margin:24px 0}nav a,.read-start{display:inline-flex;align-items:center;min-height:44px}article:target{border-color:#2056ab}
   button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #689bed;outline-offset:3px}
   @media(max-width:900px){.search-layout{grid-template-columns:minmax(0,1fr);grid-template-areas:"form" "history" "results"}.search-layout>.history{position:static;max-height:none;padding:0;border:0;background:transparent;margin:16px 0}.search-layout>.history ul{display:flex}.search-layout>.history.history-empty{display:none}}
-  @media(max-width:700px){body{padding:16px}.search-layout{grid-template-areas:"form" "results"}.search-layout>.history{display:none}.search-form button{background:white;color:#202938}.session-meta{gap:8px}h1{font-size:22px}.device-filters{gap:6px}.device-filters a{padding:4px 6px;font-size:13px}.device-filters .device-badge{padding:4px 5px;font-size:12px}}
+  @media(max-width:700px){body{padding:16px}.search-layout{grid-template-areas:"form" "results"}.search-layout>.history{display:none}.session-meta{gap:8px}h1{font-size:22px}.device-filters{gap:6px}.device-filters a{padding:4px 6px;font-size:13px}.device-filters .device-badge{padding:4px 5px;font-size:12px}}
   @media(max-width:340px){body{padding:12px}.account{font-size:13px}}
 
   </style></head><body class="${layout}"><header><h1><a href="/">LLM Session Search</a></h1><div class="account"><small>${escape(email)}</small><a href="/cdn-cgi/access/logout">Log out</a></div></header>${body}</body></html>`;
