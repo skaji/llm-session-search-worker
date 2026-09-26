@@ -166,7 +166,7 @@ export function detailPage(
   next.hash = "";
   const href = (link: URL) => escape(link.pathname + link.search + link.hash);
   return page(
-    `<div class="session-meta">${deviceBadge(s.device)}<span class="meta">${escape(s.source)}${s.archived ? " · archived" : ""}</span><span class="meta">${timestamp(s.updated_at_ms)}</span></div><h2>${escape(s.title || s.source_id)}</h2><p class="meta">${escape(s.cwd)}<br>${escape(s.path)}</p><div class="message-controls"><a href="${href(start)}">Read from the beginning</a><label class="markdown-toggle"><input id="markdown" type="checkbox"${markdown ? " checked" : ""}> Markdown</label></div>
+    `<div class="session-meta">${deviceBadge(s.device)}<span class="meta">${escape(s.source)}${s.archived ? " · archived" : ""}</span><span class="meta">${timestamp(s.updated_at_ms)}</span></div><h2>${escape(s.title || s.source_id)}</h2><p class="meta">${escape(s.path)}</p><div class="message-controls"><a href="${href(start)}">Read from the beginning</a><label class="markdown-toggle"><input id="markdown" type="checkbox"${markdown ? " checked" : ""}> Markdown</label></div>
   <main id="messages">${result.records.map((r) => `<article id="line-${r.line}" class="message${r.role === "user" ? " message-user" : ""}" aria-label="${escape(r.role)} message"><pre class="message-source">${escape(r.text)}</pre></article>`).join("") || "<p>No messages on this page.</p>"}</main>
   ${result.next_after !== null ? `<nav><a href="${href(next)}">Next messages →</a></nav>` : ""}
   <script src="/assets/detail.js" defer></script>
