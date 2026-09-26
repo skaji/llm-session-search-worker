@@ -18,7 +18,7 @@ before(async () => {
     script: bundle.outputFiles[0].text,
     compatibilityDate: "2026-09-26",
     bindings: { ALLOWED_EMAIL: "you@example.com" },
-    d1Databases: ["DB"],
+    d1Databases: ["DB", "MIGRATION_DB"],
   };
   mf = new Miniflare(
     convertV4MiniflareOptions({
@@ -50,13 +50,16 @@ before(async () => {
   for (const file of (await readdir("migrations"))
     .filter((f) => f.endsWith(".sql"))
     .sort()) {
-    const sql = await readFile(`migrations/${file}`, "utf8");
-    const statements = sql.match(
-      /CREATE TRIGGER[\s\S]*?END;|CREATE (?:TABLE|INDEX|VIRTUAL TABLE)[\s\S]*?;/g,
-    );
-    for (const statement of statements) await db.prepare(statement).run();
+    await applyMigration(db, file);
   }
 });
+async function applyMigration(db, file) {
+  const sql = await readFile(`migrations/${file}`, "utf8");
+  const statements = sql.match(
+    /CREATE TRIGGER[\s\S]*?END;|(?:CREATE (?:TABLE|INDEX|VIRTUAL TABLE)|ALTER TABLE|UPDATE)[\s\S]*?;/g,
+  );
+  await db.batch(statements.map((statement) => db.prepare(statement)));
+}
 after(async () => {
   await Promise.all([mf, denied, anonymous].map((m) => m?.dispose()));
 });
@@ -440,4 +443,131 @@ test("Markdown assets require Access and session pages opt in to the browser ren
   assert.ok(html.includes('<script src="/assets/markdown.js" defer></script>'));
   assert.ok(html.includes('<pre class="message-source">**Hello**</pre>'));
   assert.ok(!html.includes("<strong>Hello</strong>"));
+});
+
+test("message counts track inserts and deletes, survive retries, and ignore client counts", async () => {
+  const s = { ...session, source_id: "message-count", message_count: 999 };
+  assert.equal((await post([], s)).status, 200);
+  const find = async () =>
+    (await get("/api/v1/search")).results.find(
+      (r) => r.source_id === s.source_id,
+    );
+  const id = (await find()).id;
+  const count = async () =>
+    (await get(`/api/v1/sessions/${id}`)).session.message_count;
+  assert.equal(await count(), 0);
+  const records = Array.from({ length: 25 }, (_, i) => ({
+    line: i + 1,
+    role: i % 2 ? "assistant" : "user",
+    text: "countneedle",
+  }));
+  assert.equal((await post(records, s)).status, 200);
+  assert.equal(await count(), 25);
+  assert.equal((await (await post(records, s)).json()).rows_written, 0);
+  assert.equal(await count(), 25);
+  assert.equal((await find()).message_count, 25);
+  assert.equal(
+    (await get("/api/v1/search?q=countneedle")).results[0].message_count,
+    25,
+  );
+  const detail = await get(`/api/v1/sessions/${id}?after=10`);
+  assert.equal(detail.records.length, 15);
+  assert.equal(detail.session.message_count, 25);
+  for (const path of ["/?q=countneedle", `/sessions/${id}?after=10`]) {
+    const html = await (
+      await mf.dispatchFetch("https://example.com" + path)
+    ).text();
+    assert.ok(html.includes("25 messages"));
+  }
+  assert.equal(
+    (await post([{ line: 1, role: "assistant", text: "edited" }], s)).status,
+    200,
+  );
+  assert.equal(await count(), 25);
+  const deletion = [
+    { line: 1, role: "user", text: null },
+    { line: 100, role: "user", text: null },
+  ];
+  assert.equal((await post(deletion, s)).status, 200);
+  assert.equal(await count(), 24);
+  assert.equal((await (await post(deletion, s)).json()).rows_written, 0);
+  assert.equal(await count(), 24);
+  const db = await mf.getD1Database("DB");
+  await assert.rejects(
+    db.batch([
+      db
+        .prepare(
+          "INSERT INTO records(session_id,line,role,text) VALUES(?,100,'user','rollback')",
+        )
+        .bind(id),
+      db
+        .prepare(
+          "INSERT INTO records(session_id,line,role,text) VALUES(?,100,'user','duplicate')",
+        )
+        .bind(id),
+    ]),
+  );
+  assert.equal(await count(), 24);
+  const response = await mf.dispatchFetch(
+    `https://example.com/api/v1/sessions/${s.device}/${s.source}/${s.source_id}`,
+    { method: "DELETE" },
+  );
+  assert.equal(response.status, 200);
+  assert.equal(
+    (
+      await db
+        .prepare("SELECT count(*) AS n FROM records WHERE session_id=?")
+        .bind(id)
+        .first()
+    ).n,
+    0,
+  );
+  assert.equal((await post([], s)).status, 200);
+  assert.equal((await find()).message_count, 0);
+});
+
+test("message count migration backfills existing sessions without resyncing", async () => {
+  const db = await mf.getD1Database("MIGRATION_DB");
+  await applyMigration(db, "0001_initial.sql");
+  await applyMigration(db, "0002_search_history.sql");
+  for (const id of [1, 2]) {
+    await db
+      .prepare(
+        "INSERT INTO sessions(id,device,source,source_id,title,cwd,path,archived,updated_at_ms) VALUES(?,'test','codex',?,'title','','',0,0)",
+      )
+      .bind(id, String(id))
+      .run();
+  }
+  await db
+    .prepare(
+      "INSERT INTO records(session_id,line,role,text) VALUES(1,1,'user','backfillneedle'),(1,3,'assistant','reply')",
+    )
+    .run();
+  await applyMigration(db, "0003_message_count.sql");
+  assert.deepEqual(
+    (await db.prepare("SELECT message_count FROM sessions ORDER BY id").all())
+      .results,
+    [{ message_count: 2 }, { message_count: 0 }],
+  );
+  assert.equal(
+    (
+      await db
+        .prepare(
+          "SELECT count(*) AS n FROM records_fts WHERE records_fts MATCH 'backfillneedle'",
+        )
+        .first()
+    ).n,
+    1,
+  );
+  await db.prepare("DELETE FROM records WHERE session_id=1 AND line=1").run();
+  await db
+    .prepare(
+      "INSERT INTO records(session_id,line,role,text) VALUES(2,1,'user','new')",
+    )
+    .run();
+  assert.deepEqual(
+    (await db.prepare("SELECT message_count FROM sessions ORDER BY id").all())
+      .results,
+    [{ message_count: 1 }, { message_count: 1 }],
+  );
 });

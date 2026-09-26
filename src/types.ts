@@ -22,8 +22,11 @@ export interface Update {
   session: Session;
   records: RecordDelta[];
 }
-export interface Hit extends Session {
+export interface StoredSession extends Session {
   id: number;
+  message_count: number;
+}
+export interface Hit extends StoredSession {
   line: number;
   snippet: string;
 }

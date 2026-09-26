@@ -39,7 +39,8 @@ from request URLs in Workers Logs. Error logs contain no request data.
 
 The browser UI supports words or quoted phrases, session-level AND across
 messages, device and working-directory filters, recent sessions, and paginated
-message reading. Text is escaped and rendered as plain text, not HTML or Markdown.
+message reading, with each session's synced message count shown in the list and
+on its detail page. Messages support plain text and optional Markdown rendering.
 Browser searches submitted with the Search button are saved in D1 per authenticated
 email. The latest 20 distinct queries are shared across devices; repeating a query
 moves it to the top. Recent-search buttons rerun only the query, without device or
@@ -266,3 +267,10 @@ to a session URL to render Markdown, including tables and fenced code blocks.
 the beginning preserve this setting. Markdown is rendered in the browser to
 avoid adding Worker CPU time; raw HTML is displayed as text. If JavaScript is
 unavailable, the original text remains readable.
+
+Session message counts include all synced user and assistant records, regardless
+of the current search or message page. D1 stores `sessions.message_count` and
+updates it with insert/delete triggers; editing or retrying a message does not
+increment it. Migration `0003_message_count.sql` backfills existing counts without
+resyncing. Apply it with `npm run db:remote` before deploying this version to
+production; `npm run dev` applies it automatically to the local database.

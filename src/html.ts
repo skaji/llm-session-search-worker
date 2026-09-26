@@ -1,4 +1,4 @@
-import type { Hit, Session } from "./types";
+import type { Hit, StoredSession } from "./types";
 export const escape = (s: string) =>
   s.replace(
     /[&<>"']/g,
@@ -45,6 +45,9 @@ function relativeTimestamp(ms: number, now: number) {
     }
   }
   return `<time datetime="${new Date(ms).toISOString()}">${label}</time>`;
+}
+function messageCount(count: number) {
+  return `${count.toLocaleString("en-US")} ${count === 1 ? "message" : "messages"}`;
 }
 function deviceStyle(device: string) {
   return device === "imac2024"
@@ -141,7 +144,7 @@ export function searchPage(
     `<div class="search-layout"><form class="search-form" action="/search" method="post"><input name="q" aria-label="Search" value="${escape(url.searchParams.get("q") ?? "")}"><input type="hidden" name="device" value="${escape(selectedDevice)}"><button>Search</button></form>
   ${history.length ? `<aside class="history" aria-label="Recent searches"><div class="history-heading"><h2>Recent searches</h2><form action="/history/clear" method="post"><button>Clear history</button></form></div><ul>${history.map((query) => `<li><form action="/search" method="post"><button name="q" value="${escape(query)}">${escape(query)}</button></form></li>`).join("")}</ul></aside>` : `<aside class="history history-empty" aria-label="Recent searches"><div class="history-heading"><h2>Recent searches</h2></div><p class="meta">Your searches will appear here.</p></aside>`}
   <main class="search-results"><nav class="device-filters" aria-label="Filter by device">${filters}</nav>
-  ${result.results.map((s) => `<article><div class="session-meta">${deviceBadge(s.device)}<span class="meta">${escape(s.source)}${s.archived ? " · archived" : ""}</span><span class="meta">${relativeTimestamp(s.updated_at_ms, now)}</span></div><h2><a href="/sessions/${s.id}?after=${Math.max(0, s.line - 1)}&amp;markdown=1#line-${s.line}">${escape(s.title || s.source_id)}</a></h2><p class="excerpt">${escape(s.snippet)}</p></article>`).join("") || "<p>No sessions found.</p>"}
+  ${result.results.map((s) => `<article><div class="session-meta">${deviceBadge(s.device)}<span class="meta">${escape(s.source)}${s.archived ? " · archived" : ""}</span><span class="meta">${relativeTimestamp(s.updated_at_ms, now)}</span><span class="meta">${messageCount(s.message_count)}</span></div><h2><a href="/sessions/${s.id}?after=${Math.max(0, s.line - 1)}&amp;markdown=1#line-${s.line}">${escape(s.title || s.source_id)}</a></h2><p class="excerpt">${escape(s.snippet)}</p></article>`).join("") || "<p>No sessions found.</p>"}
   ${result.next_offset !== null ? `<nav><a href="${escape(next.pathname + next.search)}">Next page →</a></nav>` : ""}</main></div>`,
     email,
     "search-page",
@@ -149,7 +152,7 @@ export function searchPage(
 }
 export function detailPage(
   result: {
-    session: Session;
+    session: StoredSession;
     records: { line: number; role: string; text: string }[];
     next_after: number | null;
   },
@@ -166,7 +169,7 @@ export function detailPage(
   next.hash = "";
   const href = (link: URL) => escape(link.pathname + link.search + link.hash);
   return page(
-    `<div class="session-meta">${deviceBadge(s.device)}<span class="meta">${escape(s.source)}${s.archived ? " · archived" : ""}</span><span class="meta">${timestamp(s.updated_at_ms)}</span></div><h2>${escape(s.title || s.source_id)}</h2><p class="meta">${escape(s.path)}</p><div class="message-controls"><a href="${href(start)}">Read from the beginning</a><label class="markdown-toggle"><input id="markdown" type="checkbox"${markdown ? " checked" : ""}> Markdown</label></div>
+    `<div class="session-meta">${deviceBadge(s.device)}<span class="meta">${escape(s.source)}${s.archived ? " · archived" : ""}</span><span class="meta">${timestamp(s.updated_at_ms)}</span><span class="meta">${messageCount(s.message_count)}</span></div><h2>${escape(s.title || s.source_id)}</h2><p class="meta">${escape(s.path)}</p><div class="message-controls"><a href="${href(start)}">Read from the beginning</a><label class="markdown-toggle"><input id="markdown" type="checkbox"${markdown ? " checked" : ""}> Markdown</label></div>
   <main id="messages">${result.records.map((r) => `<article id="line-${r.line}" class="message${r.role === "user" ? " message-user" : ""}" aria-label="${escape(r.role)} message"><pre class="message-source">${escape(r.text)}</pre></article>`).join("") || "<p>No messages on this page.</p>"}</main>
   ${result.next_after !== null ? `<nav><a href="${href(next)}">Next messages →</a></nav>` : ""}
   <script src="/assets/detail.js" defer></script>

@@ -20,6 +20,7 @@ const script = await readFile("dist/markdown.txt", "utf8");
 const result = {
   session: {
     id: 1,
+    message_count: 0,
     device: "imac2024",
     source: "codex",
     source_id: "test",

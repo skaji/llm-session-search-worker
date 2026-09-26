@@ -19,6 +19,7 @@ test("search timestamps use relative units while session details keep JST", (t) 
   t.mock.method(Date, "now", () => now);
   const session = {
     id: 1,
+    message_count: 0,
     device: "imac2024",
     source: "codex",
     source_id: "time-test",
@@ -70,6 +71,7 @@ test("search timestamps use relative units while session details keep JST", (t) 
 test("missing message timestamps are shown as unknown", () => {
   const session = {
     id: 1,
+    message_count: 0,
     device: "imac2024",
     source: "codex",
     source_id: "missing-time",

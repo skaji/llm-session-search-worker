@@ -4,7 +4,7 @@ import {
   MAX_RECORDS,
   type Update,
   type Hit,
-  type Session,
+  type StoredSession,
 } from "./types";
 export async function readUpdate(request: Request): Promise<Update> {
   if (!request.headers.get("Content-Type")?.startsWith("application/json"))
@@ -188,7 +188,7 @@ export async function detail(db: D1Database, id: number, after: number) {
   const session = await db
     .prepare("SELECT * FROM sessions WHERE id=?")
     .bind(id)
-    .first<Session>();
+    .first<StoredSession>();
   if (!session) throw new HTTPError(404, "Session not found");
   const rows = (
     await db
