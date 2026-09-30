@@ -12,6 +12,7 @@ import { clearSearches, recentSearches, saveSearch } from "./history";
 import { favicon } from "./favicon";
 import { detailPage, searchPage } from "./html";
 import { HTTPError, type Env } from "./types";
+import { handleMcp } from "./mcp";
 const headers = {
   "Cache-Control": "no-store",
   "X-Content-Type-Options": "nosniff",
@@ -46,6 +47,17 @@ export default {
           throw new HTTPError(403, "Cross-origin mutation denied");
         if (request.headers.get("Sec-Fetch-Site") === "cross-site")
           throw new HTTPError(403, "Cross-site mutation denied");
+      }
+      if (url.pathname === "/mcp") {
+        const response = await handleMcp(request, env, ctx);
+        const responseHeaders = new Headers(response.headers);
+        for (const [name, value] of Object.entries(headers))
+          responseHeaders.set(name, value);
+        return new Response(response.body, {
+          status: response.status,
+          statusText: response.statusText,
+          headers: responseHeaders,
+        });
       }
       if (request.method === "GET") {
         if (

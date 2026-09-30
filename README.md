@@ -50,6 +50,37 @@ page navigation, reloads, and CLI/API searches do not write history.
 The logout link uses Cloudflare's logout endpoint, which can also invalidate
 sessions for other applications in the same Zero Trust organization.
 
+## MCP
+
+The Worker serves a stateless MCP endpoint at `/mcp`, protected by the same
+Access identity and allowed-email check as the browser UI and HTTP API.
+It exposes two read-only tools:
+
+- `search_sessions`: `query` (defaults to empty for recent sessions), optional
+  `cwd` and `device` filters, and `offset` (defaults to 0). Terms use session-level
+  AND; double quotes match phrases. Each page contains up to 20 sessions.
+  Pass `next_offset` as `offset` to continue.
+- `get_session`: numeric `id` from a search result and `after` (defaults to 0).
+  Each page contains up to 20 messages. Pass `next_after` as `after` to continue.
+  A null cursor marks the end. Synced messages may contain truncation markers.
+
+Tool results include both JSON text and structured content. Search results are
+excerpts; retrieve the session messages before drawing conclusions. Source paths
+refer to the originating computer. MCP reads do not write search history.
+
+For OAuth clients, enable **Managed OAuth** in the existing self-hosted Access
+application's **Advanced settings**, retaining its email policy and One-time PIN
+login. Configure the allowed redirect URIs for the chosen client, or allow
+localhost/loopback callbacks for a local client. Connect the client to the HTTPS
+origin from `settings.json` with `/mcp` appended. Access handles OAuth discovery,
+client registration, login, token issuance, and refresh; the Worker reads the
+authenticated identity through `ctx.access.getIdentity()`.
+
+See [Cloudflare Managed OAuth](https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/managed-oauth/).
+Enabling OAuth is a separate Cloudflare configuration step; deploying the Worker
+does not change Access settings. The MCP handler uses Workers' `nodejs_als`
+compatibility flag for the SDK's request context, without Durable Objects.
+
 ## Install and configure the CLI
 
 Requires Go 1.27 or later. The CLI supports macOS and Linux.

@@ -11,12 +11,14 @@ before(async () => {
     write: false,
     format: "esm",
     platform: "browser",
+    external: ["node:async_hooks"],
     loader: { ".txt": "text" },
   });
   const options = {
     modules: true,
     script: bundle.outputFiles[0].text,
     compatibilityDate: "2026-09-26",
+    compatibilityFlags: ["nodejs_als"],
     bindings: { ALLOWED_EMAIL: "you@example.com" },
     d1Databases: ["DB", "MIGRATION_DB"],
   };
@@ -570,4 +572,119 @@ test("message count migration backfills existing sessions without resyncing", as
       .results,
     [{ message_count: 1 }, { message_count: 1 }],
   );
+});
+
+async function mcp(method, params = {}, instance = mf, headers = {}) {
+  return instance.dispatchFetch("http://127.0.0.1/mcp", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json, text/event-stream",
+      "MCP-Protocol-Version": "2025-03-26",
+      ...headers,
+    },
+    body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
+  });
+}
+async function rpc(method, params = {}) {
+  const response = await mcp(method, params);
+  assert.equal(response.status, 200, await response.clone().text());
+  assert.equal(response.headers.get("Cache-Control"), "no-store");
+  const text = await response.text();
+  const body = response.headers
+    .get("Content-Type")
+    .includes("text/event-stream")
+    ? JSON.parse(
+        text
+          .split("\n")
+          .find((line) => line.startsWith("data: "))
+          .slice(6),
+      )
+    : JSON.parse(text);
+  assert.equal(body.error, undefined, JSON.stringify(body));
+  return body.result;
+}
+test("MCP requires Access and rejects cross-origin calls", async () => {
+  for (const instance of [denied, anonymous]) {
+    const response = await mcp("tools/list", {}, instance, {
+      "Cf-Access-Authenticated-User-Email": "you@example.com",
+    });
+    assert.equal(response.status, 403);
+  }
+  assert.equal(
+    (await mcp("tools/list", {}, mf, { Origin: "https://foreign.example" }))
+      .status,
+    403,
+  );
+});
+test("MCP initializes and exposes only the two read-only session tools", async () => {
+  const init = await rpc("initialize", {
+    protocolVersion: "2025-03-26",
+    capabilities: {},
+    clientInfo: { name: "test", version: "1.0.0" },
+  });
+  assert.equal(init.serverInfo.name, "llm-session-search");
+  const { tools } = await rpc("tools/list");
+  assert.deepEqual(tools.map((tool) => tool.name).sort(), [
+    "get_session",
+    "search_sessions",
+  ]);
+  assert.ok(tools.every((tool) => tool.annotations.readOnlyHint));
+});
+test("MCP searches and reads sessions with filters and pagination", async () => {
+  const fixture = {
+    ...session,
+    device: "mcp-test",
+    source_id: "mcp-session",
+    title: "MCP fixture",
+    cwd: "/mcp/demo",
+  };
+  for (let i = 0; i < 21; i++) {
+    await post(
+      Array.from({ length: 21 }, (_, j) => ({
+        line: j + 1,
+        role: "user",
+        text: "mcpneedle quoted phrase",
+      })),
+      { ...fixture, source_id: `mcp-session-${i}`, updated_at_ms: 2000 + i },
+    );
+  }
+  const call = (name, args) => rpc("tools/call", { name, arguments: args });
+  const args = {
+    query: 'mcpneedle "quoted phrase"',
+    device: "mcp-test",
+    cwd: "/mcp",
+  };
+  const first = await call("search_sessions", args);
+  assert.equal(first.isError, undefined);
+  assert.deepEqual(JSON.parse(first.content[0].text), first.structuredContent);
+  assert.equal(first.structuredContent.results.length, 20);
+  assert.equal(first.structuredContent.next_offset, 20);
+  const next = await call("search_sessions", { ...args, offset: 20 });
+  assert.equal(next.structuredContent.results.length, 1);
+  assert.equal(next.structuredContent.next_offset, null);
+  const empty = await call("search_sessions", { ...args, cwd: "/mc" });
+  assert.equal(empty.structuredContent.results.length, 0);
+  const recent = await call("search_sessions", { device: "mcp-test" });
+  assert.equal(recent.structuredContent.results.length, 20);
+  const id = first.structuredContent.results[0].id;
+  const detail = await call("get_session", { id });
+  assert.equal(detail.structuredContent.session.id, id);
+  assert.equal(detail.structuredContent.records.length, 20);
+  assert.equal(detail.structuredContent.next_after, 20);
+  const tail = await call("get_session", { id, after: 20 });
+  assert.equal(tail.structuredContent.records.length, 1);
+  assert.equal(tail.structuredContent.records[0].line, 21);
+  assert.equal(tail.structuredContent.next_after, null);
+  for (const [name, args] of [
+    ["get_session", { id: Number.MAX_SAFE_INTEGER }],
+    ["get_session", { id: -1 }],
+    ["search_sessions", { query: "a b c d e f" }],
+    ["search_sessions", { offset: -1 }],
+  ]) {
+    assert.equal((await call(name, args)).isError, true);
+  }
+  await mf.dispatchFetch("https://example.com/api/v1/devices/mcp-test", {
+    method: "DELETE",
+  });
 });
