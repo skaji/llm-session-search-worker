@@ -197,14 +197,14 @@ export async function detail(db: D1Database, id: number, after: number) {
   const rows = (
     await db
       .prepare(
-        "SELECT line,role,text FROM records WHERE session_id=? AND line>? ORDER BY line LIMIT 21",
+        "SELECT line,role,text FROM records WHERE session_id=? AND line>? ORDER BY line LIMIT 41",
       )
       .bind(id, after)
       .all<{ line: number; role: string; text: string }>()
   ).results;
   return {
     session,
-    records: rows.slice(0, 20),
-    next_after: rows.length > 20 ? rows[19].line : null,
+    records: rows.slice(0, 40),
+    next_after: rows.length > 40 ? rows[39].line : null,
   };
 }

@@ -151,7 +151,7 @@ test("delta sync, FTS, isolation, pagination, and HTML escaping", async () => {
     })),
   );
   detail = await get(`/api/v1/sessions/${id}`);
-  assert.equal(detail.records.length, 20);
+  assert.equal(detail.records.length, 40);
   assert.ok(detail.next_after);
   const next = await get(`/api/v1/sessions/${id}?after=${detail.next_after}`);
   assert.ok(next.records[0].line > detail.records.at(-1).line);
@@ -165,6 +165,56 @@ test("delta sync, FTS, isolation, pagination, and HTML escaping", async () => {
   );
   assert.equal((await get("/api/v1/search?q=GitHub")).results.length, 0);
 });
+test("session pages and the API paginate 40 messages", async () => {
+  const s = { ...session, source_id: "html-pagination" };
+  const records = Array.from({ length: 41 }, (_, i) => ({
+    line: (i + 1) * 3,
+    role: i % 2 ? "assistant" : "user",
+    text: "htmlpaginationneedle",
+  }));
+  assert.equal((await post(records.slice(0, 40), s)).status, 200);
+  assert.equal((await post(records.slice(40), s)).status, 200);
+  const { results } = await get("/api/v1/search?q=htmlpaginationneedle");
+  const id = results[0].id;
+  const readPage = async (path) => {
+    const response = await mf.dispatchFetch(`https://example.com${path}`);
+    assert.equal(response.status, 200);
+    const html = await response.text();
+    return {
+      html,
+      lines: [...html.matchAll(/<article id="line-(\d+)"/g)].map((m) =>
+        Number(m[1]),
+      ),
+    };
+  };
+  const first = await readPage(`/sessions/${id}?markdown=1`);
+  assert.deepEqual(
+    first.lines,
+    records.slice(0, 40).map((r) => r.line),
+  );
+  const nextHref = first.html
+    .match(/<a href="([^"]+)">Next messages →<\/a>/)[1]
+    .replaceAll("&amp;", "&");
+  const nextURL = new URL(nextHref, "https://example.com");
+  assert.equal(nextURL.searchParams.get("after"), "120");
+  assert.equal(nextURL.searchParams.get("markdown"), "1");
+  const next = await readPage(nextHref);
+  assert.deepEqual(next.lines, [123]);
+  assert.ok(!next.html.includes("Next messages →"));
+  const exact = await readPage(`/sessions/${id}?after=3`);
+  assert.deepEqual(
+    exact.lines,
+    records.slice(1).map((r) => r.line),
+  );
+  assert.ok(!exact.html.includes("Next messages →"));
+  const api = await get(`/api/v1/sessions/${id}`);
+  assert.deepEqual(api.records, records.slice(0, 40));
+  assert.equal(api.next_after, 120);
+  const apiTail = await get(`/api/v1/sessions/${id}?after=${api.next_after}`);
+  assert.deepEqual(apiTail.records, records.slice(40));
+  assert.equal(apiTail.next_after, null);
+});
+
 test("invalid input, large bodies, and cross-origin writes are rejected", async () => {
   assert.equal(
     (
@@ -675,13 +725,26 @@ test("MCP searches and reads sessions with filters and pagination", async () => 
   const recent = await call("search_sessions", { device: "mcp-test" });
   assert.equal(recent.structuredContent.results.length, 20);
   const id = first.structuredContent.results[0].id;
+  assert.equal(
+    (
+      await post(
+        Array.from({ length: 20 }, (_, i) => ({
+          line: 22 + i,
+          role: "assistant",
+          text: "mcpneedle continued",
+        })),
+        { ...fixture, source_id: "mcp-session-20", updated_at_ms: 2020 },
+      )
+    ).status,
+    200,
+  );
   const detail = await call("get_session", { id });
   assert.equal(detail.structuredContent.session.id, id);
-  assert.equal(detail.structuredContent.records.length, 20);
-  assert.equal(detail.structuredContent.next_after, 20);
-  const tail = await call("get_session", { id, after: 20 });
+  assert.equal(detail.structuredContent.records.length, 40);
+  assert.equal(detail.structuredContent.next_after, 40);
+  const tail = await call("get_session", { id, after: 40 });
   assert.equal(tail.structuredContent.records.length, 1);
-  assert.equal(tail.structuredContent.records[0].line, 21);
+  assert.equal(tail.structuredContent.records[0].line, 41);
   assert.equal(tail.structuredContent.next_after, null);
   for (const [name, args] of [
     ["get_session", { id: Number.MAX_SAFE_INTEGER }],

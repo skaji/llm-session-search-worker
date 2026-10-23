@@ -61,7 +61,7 @@ It exposes two read-only tools:
   AND; double quotes match phrases. Each page contains up to 20 sessions.
   Pass `next_offset` as `offset` to continue.
 - `get_session`: numeric `id` from a search result and `after` (defaults to 0).
-  Each page contains up to 20 messages. Pass `next_after` as `after` to continue.
+  Each page contains up to 40 messages. Pass `next_after` as `after` to continue.
   A null cursor marks the end. Synced messages may contain truncation markers.
 
 Tool results include both JSON text and structured content. Search results are
@@ -204,7 +204,7 @@ llm-session-sync show -after 100 123
 ```
 
 Search returns up to 20 sessions with `next_offset`. Message retrieval returns
-up to 20 records with `next_after`. Source paths and line numbers refer to the
+up to 40 records with `next_after`. Source paths and line numbers refer to the
 originating computer; the message endpoint makes local file access unnecessary.
 
 ## Design and current limits
@@ -287,6 +287,8 @@ goreleaser release --snapshot --clean
 ```
 
 ## Message display
+
+Session pages display up to 40 messages per page.
 
 Session pages show user messages in blue bubbles aligned to the right and
 assistant messages on the left. Role labels and source line numbers are hidden;
