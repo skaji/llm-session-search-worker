@@ -179,9 +179,13 @@ export async function search(db: D1Database, url: URL) {
       .bind(...args)
       .all<Hit>()
   ).results;
+  const total = await db
+    .prepare("SELECT count(*) AS total FROM sessions")
+    .first<{ total: number }>();
   return {
     results: rows.slice(0, 20),
     next_offset: rows.length > 20 ? offset + 20 : null,
+    total_sessions: total!.total,
   };
 }
 export async function detail(db: D1Database, id: number, after: number) {

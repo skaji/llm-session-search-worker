@@ -136,6 +136,7 @@ test("search results always enable Markdown and keep the matching anchor", () =>
       {
         results: [{ ...result.session, line: 4, snippet: "Hello" }],
         next_offset: null,
+        total_sessions: 1,
       },
       "you@example.com",
     ),

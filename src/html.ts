@@ -122,7 +122,11 @@ function page(body: string, email: string, layout = "") {
 }
 export function searchPage(
   url: URL,
-  result: { results: Hit[]; next_offset: number | null },
+  result: {
+    results: Hit[];
+    next_offset: number | null;
+    total_sessions: number;
+  },
   email: string,
   history: string[] = [],
 ) {
@@ -143,7 +147,7 @@ export function searchPage(
   return page(
     `<div class="search-layout"><form class="search-form" action="/search" method="post"><input name="q" aria-label="Search" value="${escape(url.searchParams.get("q") ?? "")}"><input type="hidden" name="device" value="${escape(selectedDevice)}"><button>Search</button></form>
   ${history.length ? `<aside class="history" aria-label="Recent searches"><div class="history-heading"><h2>Recent searches</h2><form action="/history/clear" method="post"><button>Clear history</button></form></div><ul>${history.map((query) => `<li><form action="/search" method="post"><button name="q" value="${escape(query)}">${escape(query)}</button></form></li>`).join("")}</ul></aside>` : `<aside class="history history-empty" aria-label="Recent searches"><div class="history-heading"><h2>Recent searches</h2></div><p class="meta">Your searches will appear here.</p></aside>`}
-  <main class="search-results"><nav class="device-filters" aria-label="Filter by device">${filters}</nav>
+  <main class="search-results"><p class="meta">${result.total_sessions.toLocaleString("en-US")} ${result.total_sessions === 1 ? "session" : "sessions"} in total</p><nav class="device-filters" aria-label="Filter by device">${filters}</nav>
   ${result.results.map((s) => `<article><div class="session-meta">${deviceBadge(s.device)}<span class="meta">${escape(s.source)}${s.archived ? " · archived" : ""}</span><span class="meta">${relativeTimestamp(s.updated_at_ms, now)}</span><span class="meta">${messageCount(s.message_count)}</span></div><h2><a href="/sessions/${s.id}?after=${Math.max(0, s.line - 1)}&amp;markdown=1#line-${s.line}">${escape(s.title || s.source_id)}</a></h2><p class="excerpt">${escape(s.snippet)}</p></article>`).join("") || "<p>No sessions found.</p>"}
   ${result.next_offset !== null ? `<nav><a href="${escape(next.pathname + next.search)}">Next page →</a></nav>` : ""}</main></div>`,
     email,

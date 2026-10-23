@@ -14,6 +14,21 @@ const { searchPage, detailPage } = await import(
     Buffer.from(bundle.outputFiles[0].text).toString("base64")
 );
 
+test("total session count uses separators and handles empty and singular totals", () => {
+  for (const [total, label] of [
+    [0, "0 sessions"],
+    [1, "1 session"],
+    [1234, "1,234 sessions"],
+  ]) {
+    const html = searchPage(
+      new URL("https://example.com/"),
+      { results: [], next_offset: null, total_sessions: total },
+      "user@example.com",
+    );
+    assert.ok(html.includes(`${label} in total`));
+  }
+});
+
 test("search timestamps use relative units while session details keep JST", (t) => {
   const now = Date.parse("2026-09-26T12:00:00Z");
   t.mock.method(Date, "now", () => now);
@@ -47,7 +62,11 @@ test("search timestamps use relative units while session details keep JST", (t) 
     const updated_at_ms = now - seconds * 1000;
     const html = searchPage(
       new URL("https://example.com/"),
-      { results: [{ ...session, updated_at_ms }], next_offset: null },
+      {
+        results: [{ ...session, updated_at_ms }],
+        next_offset: null,
+        total_sessions: 1,
+      },
       "user@example.com",
     );
     assert.ok(
@@ -86,7 +105,7 @@ test("missing message timestamps are shown as unknown", () => {
   const pages = [
     searchPage(
       new URL("https://example.com/"),
-      { results: [session], next_offset: null },
+      { results: [session], next_offset: null, total_sessions: 1 },
       "user@example.com",
     ),
     detailPage({ session, records: [], next_after: null }, "user@example.com"),
