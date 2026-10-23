@@ -27,7 +27,8 @@ func discoverCodexSessionFiles(codexHome string) ([]sessionFile, bool, error) {
 			if walkErr != nil {
 				return walkErr
 			}
-			if entry.IsDir() || !strings.HasSuffix(strings.ToLower(entry.Name()), ".jsonl") {
+			name := strings.ToLower(entry.Name())
+			if entry.IsDir() || !strings.HasSuffix(name, ".jsonl") && !strings.HasSuffix(name, ".jsonl.zst") {
 				return nil
 			}
 			info, err := entry.Info()

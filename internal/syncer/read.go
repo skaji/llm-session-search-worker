@@ -15,6 +15,8 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+
+	"github.com/klauspost/compress/zstd"
 )
 
 type sessionFile struct {
@@ -26,6 +28,9 @@ type sessionFile struct {
 var uuidPattern = regexp.MustCompile(`(?i)([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})`)
 
 func sessionIDFromPath(path string) string {
+	if strings.HasSuffix(strings.ToLower(path), ".jsonl.zst") {
+		path = path[:len(path)-len(".zst")]
+	}
 	if match := uuidPattern.FindStringSubmatch(filepath.Base(path)); len(match) > 1 {
 		return strings.ToLower(match[1])
 	}
@@ -82,7 +87,16 @@ func readDocument(f sessionFile, device string) (Document, error) {
 	}
 	defer func() { _ = handle.Close() }()
 	// Bound the snapshot to the discovered size; an append is picked up next time.
-	reader := bufio.NewReaderSize(io.LimitReader(handle, f.info.Size()), 256*1024)
+	input := io.LimitReader(handle, f.info.Size())
+	if strings.HasSuffix(strings.ToLower(f.path), ".jsonl.zst") {
+		decoder, err := zstd.NewReader(input, zstd.WithDecoderConcurrency(1))
+		if err != nil {
+			return doc, err
+		}
+		defer decoder.Close()
+		input = decoder
+	}
+	reader := bufio.NewReaderSize(input, 256*1024)
 	updated := int64(0)
 	for lineNumber := 1; ; lineNumber++ {
 		line, readErr := reader.ReadBytes('\n')

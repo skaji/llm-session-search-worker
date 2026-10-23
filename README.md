@@ -133,7 +133,8 @@ origins clears the previous token.
 
 With no command, the CLI syncs once. Default input directories are `$CODEX_HOME`
 (or `~/.codex`) and `$CLAUDE_CONFIG_DIR` (or `~/.claude`). Codex archived sessions
-are included. Claude subagent files are excluded, matching the local app.
+are included, and both `.jsonl` and Zstandard-compressed `.jsonl.zst` Codex logs
+are supported. Claude subagent files are excluded, matching the local app.
 
 Session update times use the latest timestamp among the displayed user and
 assistant messages. Hidden events and file modification times do not affect
