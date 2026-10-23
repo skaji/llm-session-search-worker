@@ -14,7 +14,7 @@ const { searchPage, detailPage } = await import(
     Buffer.from(bundle.outputFiles[0].text).toString("base64")
 );
 
-test("total session count uses separators and handles empty and singular totals", () => {
+test("search placeholder shows the total session count with separators and singular handling", () => {
   for (const [total, label] of [
     [0, "0 sessions"],
     [1, "1 session"],
@@ -25,7 +25,8 @@ test("total session count uses separators and handles empty and singular totals"
       { results: [], next_offset: null, total_sessions: total },
       "user@example.com",
     );
-    assert.ok(html.includes(`${label} in total`));
+    assert.ok(html.includes(`placeholder="${label}"`));
+    assert.ok(!html.includes("in total"));
   }
 });
 
