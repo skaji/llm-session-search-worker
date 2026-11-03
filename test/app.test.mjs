@@ -277,7 +277,7 @@ test("Go CLI sync and daemon work against the Worker", async () => {
   } = await import("node:fs/promises");
   const { tmpdir } = await import("node:os");
   const { join } = await import("node:path");
-  const { execFile } = await import("node:child_process");
+  const { execFile, spawn } = await import("node:child_process");
   const { promisify } = await import("node:util");
   const exec = promisify(execFile);
   const dir = await mkdtemp(join(tmpdir(), "session-sync-test-"));
@@ -309,22 +309,48 @@ test("Go CLI sync and daemon work against the Worker", async () => {
     "",
   ];
   const run = (...args) => exec(binary, args, { timeout: 15000 });
+  let foreground;
   try {
-    let output = await run(...options);
+    let output = await run("-once", ...options);
     assert.equal(JSON.parse(output.stdout).Changed, 1);
-    output = await run(...options);
+    output = await run("-once", ...options);
     assert.equal(JSON.parse(output.stdout).Requests, 0);
     await writeFile(source, row("cliunique alpha") + row("cliunique beta"));
-    output = await run(...options);
+    output = await run("-once", ...options);
     assert.equal(JSON.parse(output.stdout).Records, 1);
     output = await run("search", "-data-dir", configDir, "cliunique");
     assert.equal(JSON.parse(output.stdout).results.length, 1);
     await writeFile(source, row("cliunique replacement"));
-    await run(...options);
+    await run("-once", ...options);
     assert.equal(
       (await get("/api/v1/search?q=beta&device=cli-test")).results.length,
       0,
     );
+    foreground = spawn(binary, ["-interval", "100ms", ...options]);
+    await writeFile(source, row("foregroundfirst"));
+    for (let attempt = 0; attempt < 30; attempt++) {
+      if ((await get("/api/v1/search?q=foregroundfirst")).results.length === 1)
+        break;
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    assert.equal(
+      (await get("/api/v1/search?q=foregroundfirst")).results.length,
+      1,
+    );
+    await writeFile(source, row("foregroundunique"));
+    for (let attempt = 0; attempt < 30; attempt++) {
+      if ((await get("/api/v1/search?q=foregroundunique")).results.length === 1)
+        break;
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    assert.equal(
+      (await get("/api/v1/search?q=foregroundunique")).results.length,
+      1,
+    );
+    const exited = new Promise((resolve) => foreground.once("exit", resolve));
+    foreground.kill("SIGTERM");
+    await exited;
+    foreground = undefined;
     await run("-daemon", "-interval", "100ms", ...options);
     output = await run("-daemon-status", "-data-dir", configDir);
     assert.match(output.stdout, /running/);
@@ -349,13 +375,14 @@ test("Go CLI sync and daemon work against the Worker", async () => {
     assert.match(log, /Daemon stopped/);
     assert.doesNotMatch(log, /Sync complete/);
     await rm(source);
-    output = await run("-prune", ...options);
+    output = await run("-once", "-prune", ...options);
     assert.equal(JSON.parse(output.stdout).Deleted, 1);
     assert.equal(
       (await get("/api/v1/search?q=daemonunique")).results.length,
       0,
     );
   } finally {
+    if (foreground) foreground.kill("SIGTERM");
     await run("-daemon-stop", "-data-dir", configDir).catch(() => {});
     await rm(dir, { recursive: true, force: true });
   }

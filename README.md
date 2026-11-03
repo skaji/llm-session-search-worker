@@ -131,7 +131,9 @@ origins clears the previous token.
 
 ## Sync and daemon
 
-With no command, the CLI syncs once. Default input directories are `$CODEX_HOME`
+With no command, the CLI syncs immediately and continues syncing every minute
+in the foreground. Stop it with Ctrl-C. Sync errors are logged and retried at
+the next interval. Default input directories are `$CODEX_HOME`
 (or `~/.codex`) and `$CLAUDE_CONFIG_DIR` (or `~/.claude`). Codex archived sessions
 are included, and both `.jsonl` and Zstandard-compressed `.jsonl.zst` Codex logs
 are supported. Claude subagent files are excluded, matching the local app.
@@ -150,7 +152,9 @@ copy alone, because individual message timestamps are not stored there.
 
 ```sh
 llm-session-sync -dry-run             # Parse and count; no uploads or state changes
-llm-session-sync                      # Sync once
+llm-session-sync                      # Sync continuously in the foreground
+llm-session-sync -interval 5m         # Change the sync interval
+llm-session-sync -once                # Sync once and exit
 llm-session-sync -daemon              # Sync now, then every minute
 llm-session-sync -daemon-status       # Running PID and token validity
 llm-session-sync -daemon-stop
@@ -161,8 +165,8 @@ The daemon writes `~/.llm-session-search-worker/app.pid` and appends logs to
 `~/.llm-session-search-worker/app.log`. A PID-file lock prevents duplicate
 daemons. Startup, shutdown, and sync errors (including token expiry or authentication
 rejection) are logged; successful periodic syncs produce no log output.
-The daemon reads the configuration before each sync, so `configure` or `login`
-can replace the token without a restart. It does not renew tokens automatically.
+Both continuous modes read the configuration before each sync, so `configure` or `login`
+can replace the token without a restart. Neither mode renews tokens automatically.
 `-daemon-status` checks local expiration and, for an unexpired token, asks the
 Worker to verify access. Network errors are reported as **unknown**, not invalid.
 An idle sync sends no requests, even if the token has expired; status can check
@@ -177,7 +181,7 @@ By default, missing local session files do not remove cloud sessions. To remove
 previously synced sessions that have disappeared locally:
 
 ```sh
-llm-session-sync -prune
+llm-session-sync -once -prune
 ```
 
 To rebuild this device's cloud copy, including after losing a checkpoint or

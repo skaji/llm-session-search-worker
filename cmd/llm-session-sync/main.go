@@ -88,14 +88,15 @@ func run() error {
 	defer stop()
 	flags := flag.NewFlagSet(command, flag.ContinueOnError)
 	flags.Usage = func() {
-		_, _ = fmt.Fprintln(flags.Output(), "Usage: llm-session-sync [sync|configure|login|search|show] [options]\nWith no command, configure if needed and sync once. Place flags before search words or session ID.")
+		_, _ = fmt.Fprintln(flags.Output(), "Usage: llm-session-sync [sync|configure|login|search|show] [options]\nWith no command, configure if needed and sync continuously. Place flags before search words or session ID.")
 		flags.PrintDefaults()
 	}
 	showVersion := flags.Bool("version", false, "Print version and exit")
 	daemon := flags.Bool("daemon", false, "Run periodic sync in the background")
 	daemonStatus := flags.Bool("daemon-status", false, "Show daemon and token status")
 	daemonStop := flags.Bool("daemon-stop", false, "Stop the background daemon")
-	interval := flags.Duration("interval", time.Minute, "Daemon sync interval")
+	interval := flags.Duration("interval", time.Minute, "Sync interval")
+	onceOnly := flags.Bool("once", false, "Sync once and exit")
 	endpoint := flags.String("url", "", "Worker origin (saved by configure)")
 	home, err := os.UserHomeDir()
 	if err != nil {
@@ -144,8 +145,8 @@ func run() error {
 	if *interval <= 0 {
 		return errors.New("interval must be positive")
 	}
-	if *daemon && (*dry || *rebuild) {
-		return errors.New("run dry-run or rebuild once, without -daemon")
+	if *daemon && (*dry || *rebuild || *onceOnly) {
+		return errors.New("run once, dry-run, or rebuild without -daemon")
 	}
 	if *daemonStop {
 		return stopDaemon(*dataDir)
@@ -208,7 +209,7 @@ func run() error {
 			if *dry {
 				latest = config
 			}
-			return syncOnce(ctx, latest, *dataDir, *codex, *claude, *dry, *prune, *rebuild)
+			return syncOnce(ctx, latest, *dataDir, *codex, *claude, *dry, *prune, *rebuild, !*onceOnly && !*dry && !*rebuild)
 		}
 		if *daemon {
 			if os.Getenv(childEnv) == "1" {
@@ -216,7 +217,10 @@ func run() error {
 			}
 			return startDaemon(*dataDir)
 		}
-		return once()
+		if *onceOnly || *dry || *rebuild {
+			return once()
+		}
+		return syncLoop(ctx, *interval, once)
 	}
 
 	var data []byte
@@ -254,7 +258,7 @@ func run() error {
 	return err
 }
 
-func syncOnce(ctx context.Context, config syncer.Config, dataDir, codexHome, claudeHome string, dry, prune, rebuild bool) error {
+func syncOnce(ctx context.Context, config syncer.Config, dataDir, codexHome, claudeHome string, dry, prune, rebuild, quiet bool) error {
 	client, err := syncer.NewClient(config.URL)
 	if err != nil {
 		return err
@@ -306,7 +310,7 @@ func syncOnce(ctx context.Context, config syncer.Config, dataDir, codexHome, cla
 	if syncErr != nil {
 		return syncErr
 	}
-	if os.Getenv(childEnv) == "1" {
+	if quiet {
 		return nil
 	}
 	return json.NewEncoder(os.Stdout).Encode(stats)

@@ -124,15 +124,20 @@ func runDaemon(ctx context.Context, dir string, interval time.Duration, syncOnce
 	}
 	log.SetFlags(log.LstdFlags)
 	log.Printf("Daemon started; sync interval %s", interval)
+	err = syncLoop(ctx, interval, syncOnce)
+	log.Print("Daemon stopped")
+	return err
+}
+
+func syncLoop(ctx context.Context, interval time.Duration, syncOnce func() error) error {
 	for {
-		if err = syncOnce(); err != nil {
+		if err := syncOnce(); err != nil {
 			log.Printf("Sync failed: %v", err)
 		}
 		timer := time.NewTimer(interval)
 		select {
 		case <-ctx.Done():
 			timer.Stop()
-			log.Print("Daemon stopped")
 			return nil
 		case <-timer.C:
 		}
