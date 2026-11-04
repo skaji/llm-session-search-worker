@@ -61,18 +61,18 @@ assertions and workload result checks.
 One remote run returned the following D1 metadata (not HTTP latency or Worker
 CPU time):
 
-| Operation | Rows read | Rows written | SQL duration (ms) |
-| --- | ---: | ---: | ---: |
-| Seed 1,000 messages and 20 sessions, including fixture cleanup | 2,028 | 4,064 | 127.77 |
-| Rare trigram term, 10 matches | 10 | 0 | 0.91 |
-| Common trigram term, 1,000 matches | 1,000 | 0 | 1.44 |
-| Japanese trigram term, 100 matches | 100 | 0 | 0.36 |
-| Two-character fallback, 100 matches | 1,000 | 0 | 3.06 |
-| Unchanged one-message UPSERT | 4 | 0 | 0.41 |
-| Session-level AND, 10 matching sessions | 3,060 | 0 | 5.37 |
-| Append one message | 1 | 4 | 0.48 |
-| Update that message | 1 | 3 | 0.56 |
-| Delete that message | 1 | 2 | 0.59 |
+| Operation                                                      | Rows read | Rows written | SQL duration (ms) |
+| -------------------------------------------------------------- | --------: | -----------: | ----------------: |
+| Seed 1,000 messages and 20 sessions, including fixture cleanup |     2,028 |        4,064 |            127.77 |
+| Rare trigram term, 10 matches                                  |        10 |            0 |              0.91 |
+| Common trigram term, 1,000 matches                             |     1,000 |            0 |              1.44 |
+| Japanese trigram term, 100 matches                             |       100 |            0 |              0.36 |
+| Two-character fallback, 100 matches                            |     1,000 |            0 |              3.06 |
+| Unchanged one-message UPSERT                                   |         4 |            0 |              0.41 |
+| Session-level AND, 10 matching sessions                        |     3,060 |            0 |              5.37 |
+| Append one message                                             |         1 |            4 |              0.48 |
+| Update that message                                            |         1 |            3 |              0.56 |
+| Delete that message                                            |         1 |            2 |              0.59 |
 
 Database size after seeding was 1,445,888 bytes, including indexes and internal
 metadata. Fixtures are repetitive synthetic text; neither size nor performance
@@ -146,16 +146,16 @@ requests, adding 259 synthetic records (then deleting one) on top of the
 accepted measured batch was about 20 KiB. Oversized JSON was tested for
 rejection, not processing performance near the 128 KiB ceiling.
 
-| Operation | Records | Average HTTP ms (5 requests) | D1 rows written per request |
-| --- | ---: | ---: | ---: |
-| Insert into a new session | 1 | 58.55 | 7 |
-| Insert into a new session | 10 | 42.39 | 43 |
-| Insert into a new session | 40 | 70.58 | 163 |
-| Change existing text | 40 | 61.98 | 120 |
-| Retransmit unchanged text | 40 | 46.18 | 0 |
-| English session search | — | 35.18 | 0 |
-| Japanese session search | — | 37.04 | 0 |
-| Short Japanese session search | — | 34.26 | 0 |
+| Operation                     | Records | Average HTTP ms (5 requests) | D1 rows written per request |
+| ----------------------------- | ------: | ---------------------------: | --------------------------: |
+| Insert into a new session     |       1 |                        58.55 |                           7 |
+| Insert into a new session     |      10 |                        42.39 |                          43 |
+| Insert into a new session     |      40 |                        70.58 |                         163 |
+| Change existing text          |      40 |                        61.98 |                         120 |
+| Retransmit unchanged text     |      40 |                        46.18 |                           0 |
+| English session search        |       — |                        35.18 |                           0 |
+| Japanese session search       |       — |                        37.04 |                           0 |
+| Short Japanese session search |       — |                        34.26 |                           0 |
 
 For the same 73 invocations, the Cloudflare dashboard's Worker Metrics CPU Time
 chart reported **P50 0.96 ms, P90 2.22 ms, P99/P999 2.85 ms** and zero runtime
