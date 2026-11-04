@@ -100,7 +100,7 @@ with `-url` on its first run). It saves the URL and asks for:
 
 Token input is hidden. The configuration is saved to
 `~/.llm-session-search-worker/config.json` with mode 0600. All CLI-owned
-checkpoints, PID files, and logs live under that directory (created with mode
+checkpoints live under that directory (created with mode
 0700). Never commit or share it. Use distinct device names on different computers.
 
 To obtain a token using an existing `cloudflared` installation:
@@ -129,7 +129,7 @@ explicitly if that is not intended. To use another Worker, run
 `llm-session-sync configure -url https://your-worker.example.com`; changing
 origins clears the previous token.
 
-## Sync and daemon
+## Sync
 
 With no command, the CLI syncs immediately and continues syncing every minute
 in the foreground. Stop it with Ctrl-C. Sync errors are logged and retried at
@@ -144,7 +144,7 @@ them. If no displayed message has a valid timestamp, the API returns
 `updated_at_ms: 0` and the UI shows "Unknown update time".
 
 To update previously synced timestamps, upgrade the CLI on each source device
-and run a normal sync (restart any running daemon to use the new binary).
+and run a normal sync.
 Every sync rereads the local logs and uploads changed metadata, preserving
 session IDs and URLs; no database migration or `-rebuild` is needed. Sessions
 whose source logs are no longer available cannot be corrected from the cloud
@@ -155,23 +155,16 @@ llm-session-sync -dry-run             # Parse and count; no uploads or state cha
 llm-session-sync                      # Sync continuously in the foreground
 llm-session-sync -interval 5m         # Change the sync interval
 llm-session-sync -once                # Sync once and exit
-llm-session-sync -daemon              # Sync now, then every minute
-llm-session-sync -daemon-status       # Running PID and token validity
-llm-session-sync -daemon-stop
-llm-session-sync -daemon -interval 5m
 ```
 
-The daemon writes `~/.llm-session-search-worker/app.pid` and appends logs to
-`~/.llm-session-search-worker/app.log`. A PID-file lock prevents duplicate
-daemons. Startup, shutdown, and sync errors (including token expiry or authentication
-rejection) are logged; successful periodic syncs produce no log output.
-Both continuous modes read the configuration before each sync, so `configure` or `login`
-can replace the token without a restart. Neither mode renews tokens automatically.
-`-daemon-status` checks local expiration and, for an unexpired token, asks the
-Worker to verify access. Network errors are reported as **unknown**, not invalid.
-An idle sync sends no requests, even if the token has expired; status can check
-it explicitly. The daemon does not automatically start after a reboot, and the
-log is not rotated automatically.
+The continuous sync reads the configuration before each sync, so `configure`
+or `login` can replace the token without a restart. Tokens are not renewed
+automatically. To run the sync in the background on macOS, you can use
+[macos-super-daemon](https://github.com/skaji/macos-super-daemon):
+
+```sh
+macos-super-daemon exec llm-session-sync
+```
 
 Input-directory overrides are available as `-codex-home` and `-claude-home`;
 pass an empty value to disable one source. `-data-dir` overrides the default
@@ -191,7 +184,7 @@ recreating the remote database:
 llm-session-sync -rebuild
 ```
 
-Run rebuild as a one-shot command, not a daemon option. It deletes only the
+Rebuild runs once. It deletes only the
 configured device's copy, then uploads the local source again. It is not an
 atomic whole-device replacement, so search may temporarily show partial results.
 
@@ -243,7 +236,7 @@ originating computer; the message endpoint makes local file access unnecessary.
 ```sh
 npm run dev                     # 127.0.0.1:8790, separate from the local app's 8787
 npm run typecheck
-npm test                        # Worker + Go CLI + daemon integration, synthetic data
+npm test                        # Worker + Go CLI integration, synthetic data
 
 gofumpt -w cmd internal
 goimports -w cmd internal

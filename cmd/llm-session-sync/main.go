@@ -92,9 +92,6 @@ func run() error {
 		flags.PrintDefaults()
 	}
 	showVersion := flags.Bool("version", false, "Print version and exit")
-	daemon := flags.Bool("daemon", false, "Run periodic sync in the background")
-	daemonStatus := flags.Bool("daemon-status", false, "Show daemon and token status")
-	daemonStop := flags.Bool("daemon-stop", false, "Stop the background daemon")
 	interval := flags.Duration("interval", time.Minute, "Sync interval")
 	onceOnly := flags.Bool("once", false, "Sync once and exit")
 	endpoint := flags.String("url", "", "Worker origin (saved by configure)")
@@ -133,45 +130,8 @@ func run() error {
 	if command != "search" && command != "show" && flags.NArg() != 0 {
 		return errors.New("unexpected positional arguments")
 	}
-	modes := 0
-	for _, enabled := range []bool{*daemon, *daemonStatus, *daemonStop} {
-		if enabled {
-			modes++
-		}
-	}
-	if modes > 1 || (modes > 0 && command != "sync") {
-		return errors.New("daemon options are mutually exclusive and only apply to sync")
-	}
 	if *interval <= 0 {
 		return errors.New("interval must be positive")
-	}
-	if *daemon && (*dry || *rebuild || *onceOnly) {
-		return errors.New("run once, dry-run, or rebuild without -daemon")
-	}
-	if *daemonStop {
-		return stopDaemon(*dataDir)
-	}
-	if *daemonStatus {
-		pid, running, statusErr := daemonPID(*dataDir)
-		if statusErr != nil {
-			return statusErr
-		}
-		if running {
-			_, _ = fmt.Fprintf(os.Stdout, "Daemon: running (PID %d)\n", pid)
-		} else {
-			_, _ = fmt.Fprintln(os.Stdout, "Daemon: stopped")
-		}
-		config, loadErr := syncer.LoadConfig(*dataDir)
-		if loadErr != nil {
-			return loadErr
-		}
-		client, clientErr := syncer.NewClient(config.URL)
-		if clientErr != nil {
-			return clientErr
-		}
-		client.Token = config.Token
-		_, _ = fmt.Fprintln(os.Stdout, "Token:", syncer.TokenStatus(ctx, client))
-		return nil
 	}
 	config, err := syncer.LoadConfig(*dataDir)
 	if err != nil {
@@ -194,7 +154,7 @@ func run() error {
 	if command == "configure" {
 		return configure(&config, *dataDir, true)
 	}
-	if os.Getenv(childEnv) != "1" && command != "login" && !*dry && (config.Device == "" || (!client.Local && config.Token == "" && command != "login")) {
+	if command != "login" && !*dry && (config.Device == "" || (!client.Local && config.Token == "")) {
 		if err = configure(&config, *dataDir, true); err != nil {
 			return err
 		}
@@ -210,12 +170,6 @@ func run() error {
 				latest = config
 			}
 			return syncOnce(ctx, latest, *dataDir, *codex, *claude, *dry, *prune, *rebuild, !*onceOnly && !*dry && !*rebuild)
-		}
-		if *daemon {
-			if os.Getenv(childEnv) == "1" {
-				return runDaemon(ctx, *dataDir, *interval, once)
-			}
-			return startDaemon(*dataDir)
 		}
 		if *onceOnly || *dry || *rebuild {
 			return once()

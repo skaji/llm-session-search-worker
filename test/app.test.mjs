@@ -267,14 +267,8 @@ test("invalid input, large bodies, and cross-origin writes are rejected", async 
   );
 });
 
-test("Go CLI sync and daemon work against the Worker", async () => {
-  const {
-    mkdtemp,
-    writeFile,
-    mkdir,
-    rm,
-    readFile: read,
-  } = await import("node:fs/promises");
+test("Go CLI sync works against the Worker", async () => {
+  const { mkdtemp, writeFile, mkdir, rm } = await import("node:fs/promises");
   const { tmpdir } = await import("node:os");
   const { join } = await import("node:path");
   const { execFile, spawn } = await import("node:child_process");
@@ -292,7 +286,11 @@ test("Go CLI sync and daemon work against the Worker", async () => {
     JSON.stringify({ url, device: "cli-test", token: "" }),
     { mode: 0o600 },
   );
-  const source = join(home, "sessions", "cli.jsonl");
+  const source = join(
+    home,
+    "sessions",
+    "019e992e-38ca-7a92-8dc6-45f54a2bad8d.jsonl",
+  );
   const row = (text) =>
     JSON.stringify({
       type: "response_item",
@@ -351,39 +349,15 @@ test("Go CLI sync and daemon work against the Worker", async () => {
     foreground.kill("SIGTERM");
     await exited;
     foreground = undefined;
-    await run("-daemon", "-interval", "100ms", ...options);
-    output = await run("-daemon-status", "-data-dir", configDir);
-    assert.match(output.stdout, /running/);
-    assert.match(output.stdout, /development/);
-    output = await run("-daemon", "-interval", "100ms", ...options);
-    assert.match(output.stdout, /already running/);
-    await writeFile(source, row("daemonunique"));
-    for (let attempt = 0; attempt < 30; attempt++) {
-      if ((await get("/api/v1/search?q=daemonunique")).results.length === 1)
-        break;
-      await new Promise((resolve) => setTimeout(resolve, 100));
-    }
-    assert.equal(
-      (await get("/api/v1/search?q=daemonunique")).results.length,
-      1,
-    );
-    await run("-daemon-stop", "-data-dir", configDir);
-    output = await run("-daemon-status", "-data-dir", configDir);
-    assert.match(output.stdout, /stopped/);
-    const log = await read(join(configDir, "app.log"), "utf8");
-    assert.match(log, /Daemon started/);
-    assert.match(log, /Daemon stopped/);
-    assert.doesNotMatch(log, /Sync complete/);
     await rm(source);
     output = await run("-once", "-prune", ...options);
     assert.equal(JSON.parse(output.stdout).Deleted, 1);
     assert.equal(
-      (await get("/api/v1/search?q=daemonunique")).results.length,
+      (await get("/api/v1/search?q=foregroundunique")).results.length,
       0,
     );
   } finally {
     if (foreground) foreground.kill("SIGTERM");
-    await run("-daemon-stop", "-data-dir", configDir).catch(() => {});
     await rm(dir, { recursive: true, force: true });
   }
 });

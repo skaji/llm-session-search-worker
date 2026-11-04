@@ -134,9 +134,6 @@ func TestExpiredTokenAndRedirect(t *testing.T) {
 	token := "a." + base64.RawURLEncoding.EncodeToString(data) + ".c"
 	client, _ := NewClient("https://sessions.example.com")
 	client.Token = token
-	if !strings.Contains(TokenStatus(context.Background(), client), "expired") {
-		t.Fatal("missing expiry")
-	}
 	if _, err := client.Get(context.Background(), "/api/v1/me"); !errors.Is(err, ErrAuthentication) {
 		t.Fatal("expired token accepted")
 	}
