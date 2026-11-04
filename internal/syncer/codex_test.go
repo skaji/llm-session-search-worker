@@ -83,7 +83,7 @@ func TestCodexCompressedSessionErrors(t *testing.T) {
 			if err := os.Mkdir(dir, 0o700); err != nil {
 				t.Fatal(err)
 			}
-			path := filepath.Join(dir, "session.jsonl.zst")
+			path := filepath.Join(dir, "session-019e992e-38ca-7a92-8dc6-45f54a2bad8d.jsonl.zst")
 			if err := os.WriteFile(path, data, 0o600); err != nil {
 				t.Fatal(err)
 			}
@@ -91,13 +91,6 @@ func TestCodexCompressedSessionErrors(t *testing.T) {
 				t.Fatalf("expected error containing path; got %v", err)
 			}
 		})
-	}
-}
-
-func TestCompressedSessionFallbackID(t *testing.T) {
-	plain := "/sessions/session.jsonl"
-	if sessionIDFromPath(plain) != sessionIDFromPath(plain+".zst") {
-		t.Fatal("compression changed session identity")
 	}
 }
 

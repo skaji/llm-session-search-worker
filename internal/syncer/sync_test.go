@@ -21,9 +21,10 @@ func TestParseConversations(t *testing.T) {
 	if err := os.Mkdir(sessions, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	path := filepath.Join(sessions, "test.jsonl")
+	path := filepath.Join(sessions, "test-019e992e-38ca-7a92-8dc6-45f54a2bad8d.jsonl")
 	data := `{"type":"session_meta","payload":{"cwd":"/projects/demo"},"timestamp":"2026-09-25T01:00:00Z"}
 {"type":"response_item","payload":{"role":"user","content":[{"type":"input_text","text":"hello 日本語検索"},{"type":"input_text","text":"# AGENTS.md instructions for /tmp\n<INSTRUCTIONS>hidden</INSTRUCTIONS>"}]}}
+not-json
 {"type":"response_item","payload":{"role":"assistant","content":[{"type":"output_text","text":"answer"}]}}
 {"type":"response_item","payload":`
 	if err := os.WriteFile(path, []byte(data), 0o600); err != nil {

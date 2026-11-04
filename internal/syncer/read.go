@@ -3,39 +3,22 @@ package syncer
 import (
 	"bufio"
 	"bytes"
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"io/fs"
 	"os"
-	"path/filepath"
-	"regexp"
 	"slices"
 	"strings"
 
-	"github.com/klauspost/compress/zstd"
+	session "github.com/skaji/llm-session-internal"
 )
 
 type sessionFile struct {
 	source, path, id, title string
 	archived, titleKnown    bool
 	info                    fs.FileInfo
-}
-
-var uuidPattern = regexp.MustCompile(`(?i)([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})`)
-
-func sessionIDFromPath(path string) string {
-	if strings.HasSuffix(strings.ToLower(path), ".jsonl.zst") {
-		path = path[:len(path)-len(".zst")]
-	}
-	if match := uuidPattern.FindStringSubmatch(filepath.Base(path)); len(match) > 1 {
-		return strings.ToLower(match[1])
-	}
-	sum := sha256.Sum256([]byte(path))
-	return "file-" + hex.EncodeToString(sum[:12])
 }
 
 func ReadDocuments(codexHome, claudeHome, device string) ([]Document, error) {
@@ -88,14 +71,13 @@ func readDocument(f sessionFile, device string) (Document, error) {
 	defer func() { _ = handle.Close() }()
 	// Bound the snapshot to the discovered size; an append is picked up next time.
 	input := io.LimitReader(handle, f.info.Size())
-	if strings.HasSuffix(strings.ToLower(f.path), ".jsonl.zst") {
-		decoder, err := zstd.NewReader(input, zstd.WithDecoderConcurrency(1))
-		if err != nil {
-			return doc, err
-		}
-		defer decoder.Close()
-		input = decoder
+	decoded, err := session.Decode(input, f.path)
+	if err != nil {
+		return doc, err
 	}
+	defer func() { _ = decoded.Close() }()
+	input = decoded
+
 	reader := bufio.NewReaderSize(input, 256*1024)
 	updated := int64(0)
 	for lineNumber := 1; ; lineNumber++ {
@@ -106,7 +88,7 @@ func readDocument(f sessionFile, device string) (Document, error) {
 				if errors.Is(readErr, io.EOF) {
 					break
 				}
-				return doc, fmt.Errorf("invalid JSON at line %d", lineNumber)
+				continue
 			}
 			e := extractSessionLine(f.source, line)
 			if doc.Session.CWD == "" {
