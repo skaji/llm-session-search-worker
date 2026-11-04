@@ -1,7 +1,7 @@
 github.com/klauspost/compress v1.20.3 h1:zWNoFqq/lSuYQRim3dUXlXeA0IqwuZGicdG5ZTfY5j4=
 github.com/klauspost/compress v1.20.3/go.mod h1:LUdAzn7YLVvxLpc7y3V1m40wESHTgc1422pwwBSKYuI=
-github.com/skaji/llm-session-internal v0.0.1 h1:akFiA7uIjf0jLGsYBYpX/7zy2rY263mYGgNKpHQRVD8=
-github.com/skaji/llm-session-internal v0.0.1/go.mod h1:3Cz//3FQZUITrWU05gD1LNU+wX36QkkwAvISG9c0Dgc=
+github.com/skaji/llm-session-internal v0.0.2 h1:GgTvLY9+mfGF/AXKUHd/uCprF2P/j/WttZLqMfgOJHc=
+github.com/skaji/llm-session-internal v0.0.2/go.mod h1:3Cz//3FQZUITrWU05gD1LNU+wX36QkkwAvISG9c0Dgc=
 golang.org/x/sys v0.48.0 h1:bbX/i/6MgT9BVLM9RT1thmxL04yeTAhbEz4SyadbXoo=
 golang.org/x/sys v0.48.0/go.mod h1:hNLxWAXmnKAxqDtdwIYC4bM9oQPEecfsnNMuSxOs3og=
 golang.org/x/term v0.46.0 h1:3+OXuTbaKDgwk8jTi3aSLHRlmWqHEUDUtxnbFigO4YE=

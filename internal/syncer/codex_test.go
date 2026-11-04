@@ -132,3 +132,25 @@ func TestCodexOpenPageContext(t *testing.T) {
 		})
 	}
 }
+
+func TestClaudeCompressedSessions(t *testing.T) {
+	home := t.TempDir()
+	dir := filepath.Join(home, "projects", "example")
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	enc, err := zstd.NewWriter(nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = enc.Close() }()
+	const id = "019e992e-38ca-7a92-8dc6-45f54a2bad8d"
+	data := []byte(`{"type":"user","message":{"role":"user","content":"hello"}}` + "\n")
+	if err := os.WriteFile(filepath.Join(dir, id+".jsonl.zst"), enc.EncodeAll(data, nil), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	docs, err := ReadDocuments("", home, "test")
+	if err != nil || len(docs) != 1 || len(docs[0].Records) != 1 || *docs[0].Records[0].Text != "hello" {
+		t.Fatalf("docs=%+v err=%v", docs, err)
+	}
+}

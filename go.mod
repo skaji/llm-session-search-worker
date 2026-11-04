@@ -4,7 +4,7 @@ go 1.27.0
 
 require (
 	github.com/klauspost/compress v1.20.3
-	github.com/skaji/llm-session-internal v0.0.1
+	github.com/skaji/llm-session-internal v0.0.2
 	golang.org/x/term v0.46.0
 )
 
