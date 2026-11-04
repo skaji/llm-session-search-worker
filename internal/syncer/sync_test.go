@@ -54,7 +54,7 @@ not-json
 func TestPendingReplayAndNoOp(t *testing.T) {
 	calls := 0
 	fail := true
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		calls++
 		w.Header().Set("Content-Type", "application/json")
 		if fail {
