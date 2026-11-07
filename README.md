@@ -21,6 +21,9 @@ npm run deploy
 
 `npm run deploy`, `npm run dev`, and the database migration commands read
 `settings.json` and generate the ignored `wrangler.local.json` from `wrangler.jsonc`.
+The page footer shows the Git commit used for the build, with a warning if the
+working tree had uncommitted changes. If Git metadata is unavailable, it shows
+`unknown`.
 The URL hostname becomes the Worker custom domain; the email becomes `ALLOWED_EMAIL`
 and the local development identity. The URL must be an HTTPS origin without a path.
 Keep `settings.json` on each development/deployment machine; it is not committed.

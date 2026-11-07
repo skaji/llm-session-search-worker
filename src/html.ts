@@ -1,4 +1,5 @@
 import type { Hit, StoredSession } from "./types";
+import { buildInfo } from "../dist/build-info";
 export const escape = (s: string) =>
   s.replace(
     /[&<>"']/g,
@@ -67,12 +68,18 @@ function deviceBadge(device: string) {
   return `<span class="device-badge device-${style}"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round">${icon}</svg>${escape(device)}</span>`;
 }
 function page(body: string, email: string, layout = "") {
+  const commit = buildInfo.commit;
+  const version =
+    commit && /^[0-9a-f]{40,64}$/.test(commit)
+      ? `<a href="https://github.com/skaji/llm-session-search-worker/commit/${commit}">${commit.slice(0, 12)}</a>${buildInfo.dirty ? " (uncommitted changes)" : ""}`
+      : "unknown";
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LLM Session Search</title><link rel="icon" type="image/svg+xml" href="/favicon.svg"><style>
   :root{font-family:system-ui,sans-serif;color:#202938;background:#fff;color-scheme:light}
   *{box-sizing:border-box}body{max-width:1028px;margin:0 auto;padding:24px}
   header{display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:24px}
   h1{font-size:24px;margin:0}h1 a{color:#172d49;text-decoration:none}a{color:#2056ab}
   .account{font-size:14px;overflow-wrap:anywhere}.account small{display:block;color:#657085}
+  footer{margin-top:32px;color:#657085;font-size:12px}
   .search-page{max-width:1300px}
   .search-layout{display:grid;grid-template-columns:260px minmax(0,1fr);grid-template-rows:auto 1fr;grid-template-areas:"history form" "history results";gap:0 28px;align-items:start}
   .search-layout>.search-form{grid-area:form;margin-top:0}.search-results{grid-area:results;min-width:0}
@@ -118,7 +125,7 @@ function page(body: string, email: string, layout = "") {
   @media(max-width:700px){body{padding:16px}.search-layout{grid-template-areas:"form" "results"}.search-layout>.history{display:none}.session-meta{gap:8px}h1{font-size:22px}.device-filters{gap:6px}.device-filters a{padding:4px 6px;font-size:13px}.device-filters .device-badge{padding:4px 5px;font-size:12px}}
   @media(max-width:340px){body{padding:12px}.account{font-size:13px}}
 
-  </style></head><body class="${layout}"><header><h1><a href="/">LLM Session Search</a></h1><div class="account"><small>${escape(email)}</small><a href="/cdn-cgi/access/logout">Log out</a></div></header>${body}</body></html>`;
+  </style></head><body class="${layout}"><header><h1><a href="/">LLM Session Search</a></h1><div class="account"><small>${escape(email)}</small><a href="/cdn-cgi/access/logout">Log out</a></div></header>${body}<footer>Commit: ${version}</footer></body></html>`;
 }
 export function searchPage(
   url: URL,

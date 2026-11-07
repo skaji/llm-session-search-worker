@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { build } from "esbuild";
+import { readFile } from "node:fs/promises";
 
 const bundle = await build({
   entryPoints: ["src/html.ts"],
@@ -13,6 +14,23 @@ const { searchPage, detailPage } = await import(
   "data:text/javascript;base64," +
     Buffer.from(bundle.outputFiles[0].text).toString("base64")
 );
+
+test("pages show the commit and whether the build had uncommitted changes", async () => {
+  const source = await readFile("dist/build-info.ts", "utf8");
+  const info = JSON.parse(source.match(/buildInfo = (.*?) as /)[1]);
+  const html = searchPage(
+    new URL("https://example.com/"),
+    { results: [], next_offset: null, total_sessions: 0 },
+    "user@example.com",
+  );
+  if (info.commit) {
+    assert.ok(html.includes(`/commit/${info.commit}`));
+    assert.ok(html.includes(info.commit.slice(0, 12)));
+    assert.equal(html.includes("(uncommitted changes)"), info.dirty);
+  } else {
+    assert.ok(html.includes("Commit: unknown"));
+  }
+});
 
 test("search placeholder shows the total session count with separators and singular handling", () => {
   for (const [total, label] of [
