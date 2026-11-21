@@ -119,13 +119,17 @@ test("delta sync, FTS, isolation, pagination, and HTML escaping", async () => {
   );
   await post(records, { ...session, device: "imac" });
   assert.equal((await get("/api/v1/search?q=GitHub")).results.length, 2);
-  const filtered = await get("/api/v1/search?q=missing-term&device=macbook");
+  assert.equal((await get("/api/v1/search")).total_sessions, 2);
+  assert.equal((await get("/api/v1/search?device=unknown")).total_sessions, 0);
+  const filtered = await get(
+    "/api/v1/search?q=missing-term&cwd=%2Fmissing&device=macbook",
+  );
   assert.equal(filtered.results.length, 0);
-  assert.equal(filtered.total_sessions, 2);
+  assert.equal(filtered.total_sessions, 1);
   const searchHTML = await (
     await mf.dispatchFetch("https://example.com/?q=missing-term&device=macbook")
   ).text();
-  assert.ok(searchHTML.includes('placeholder="2 sessions"'));
+  assert.ok(searchHTML.includes('placeholder="1 session"'));
   const id = results.results[0].id;
   let detail = await get(`/api/v1/sessions/${id}`);
   assert.equal(detail.records.length, 2);
