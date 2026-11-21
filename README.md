@@ -88,11 +88,15 @@ compatibility flag for the SDK's request context, without Durable Objects.
 
 Requires Go 1.27 or later. The CLI supports macOS and Linux.
 
+The CLI was previously named `llm-session-sync`. Existing configuration and
+checkpoints remain in the same directory. After upgrading, update scripts and
+background services to use `llm-session-search-worker-sync`.
+
 ```sh
-go install ./cmd/llm-session-sync
+go install ./cmd/llm-session-search-worker-sync
 worker_url=$(node -p 'JSON.parse(require("fs").readFileSync("settings.json", "utf8")).url')
-llm-session-sync configure -url "$worker_url"
-llm-session-sync
+llm-session-search-worker-sync configure -url "$worker_url"
+llm-session-search-worker-sync
 ```
 
 Configure the CLI once with the URL from `settings.json` (or pass that URL
@@ -120,16 +124,16 @@ service tokens are not accepted here.
 To change the saved token or device name:
 
 ```sh
-llm-session-sync configure
+llm-session-search-worker-sync configure
 ```
 
-Alternatively, `llm-session-sync login` runs `cloudflared`'s browser login and
+Alternatively, `llm-session-search-worker-sync login` runs `cloudflared`'s browser login and
 saves the resulting token without printing it. The normal sync path does not
 require `cloudflared`; it uses the configured token directly.
 
 Changing the device name creates another cloud copy. Delete the old copy
 explicitly if that is not intended. To use another Worker, run
-`llm-session-sync configure -url https://your-worker.example.com`; changing
+`llm-session-search-worker-sync configure -url https://your-worker.example.com`; changing
 origins clears the previous token.
 
 ## Sync
@@ -154,10 +158,10 @@ whose source logs are no longer available cannot be corrected from the cloud
 copy alone, because individual message timestamps are not stored there.
 
 ```sh
-llm-session-sync -dry-run             # Parse and count; no uploads or state changes
-llm-session-sync                      # Sync continuously in the foreground
-llm-session-sync -interval 5m         # Change the sync interval
-llm-session-sync -once                # Sync once and exit
+llm-session-search-worker-sync -dry-run             # Parse and count; no uploads or state changes
+llm-session-search-worker-sync                      # Sync continuously in the foreground
+llm-session-search-worker-sync -interval 5m         # Change the sync interval
+llm-session-search-worker-sync -once                # Sync once and exit
 ```
 
 The continuous sync reads the configuration before each sync, so `configure`
@@ -166,7 +170,7 @@ automatically. To run the sync in the background on macOS, you can use
 [macos-super-daemon](https://github.com/skaji/macos-super-daemon):
 
 ```sh
-macos-super-daemon exec llm-session-sync
+macos-super-daemon exec llm-session-search-worker-sync
 ```
 
 Input-directory overrides are available as `-codex-home` and `-claude-home`;
@@ -177,14 +181,14 @@ By default, missing local session files do not remove cloud sessions. To remove
 previously synced sessions that have disappeared locally:
 
 ```sh
-llm-session-sync -once -prune
+llm-session-search-worker-sync -once -prune
 ```
 
 To rebuild this device's cloud copy, including after losing a checkpoint or
 recreating the remote database:
 
 ```sh
-llm-session-sync -rebuild
+llm-session-search-worker-sync -rebuild
 ```
 
 Rebuild runs once. It deletes only the
@@ -196,11 +200,11 @@ atomic whole-device replacement, so search may temporarily show partial results.
 Flags must precede search words or the session ID. Output is JSON.
 
 ```sh
-llm-session-sync search 'github actions'
-llm-session-sync search -cwd /Users/skaji/src/github.com/skaji '"a phrase"'
-llm-session-sync search -filter-device imac -offset 20 database
-llm-session-sync show 123
-llm-session-sync show -after 100 123
+llm-session-search-worker-sync search 'github actions'
+llm-session-search-worker-sync search -cwd /Users/skaji/src/github.com/skaji '"a phrase"'
+llm-session-search-worker-sync search -filter-device imac -offset 20 database
+llm-session-search-worker-sync show 123
+llm-session-search-worker-sync show -after 100 123
 ```
 
 Search returns up to 20 sessions with `next_offset`. Message retrieval returns
@@ -265,15 +269,15 @@ by the main configuration; its source is retained as `src/probe.js`.
 
 ## CLI releases
 
-`llm-session-sync -version` prints the release version (for example, `0.1.0`).
+`llm-session-search-worker-sync -version` prints the release version (for example, `0.1.0`).
 Plain `go build` builds report `dev`. This command does not require CLI configuration.
 
 Pushing a version tag such as `v0.1.0` runs the release workflow. After Go tests
 pass, GoReleaser creates a GitHub Release with these archives and `checksums.txt`:
 
-- `llm-session-sync-darwin-arm64.tar.gz`
-- `llm-session-sync-linux-amd64.tar.gz`
-- `llm-session-sync-linux-arm64.tar.gz`
+- `llm-session-search-worker-sync-darwin-arm64.tar.gz`
+- `llm-session-search-worker-sync-linux-amd64.tar.gz`
+- `llm-session-search-worker-sync-linux-arm64.tar.gz`
 
 Each archive contains the CLI, README, and example settings. Local settings and
 credentials are not included. The workflow uses the built-in `GITHUB_TOKEN`;

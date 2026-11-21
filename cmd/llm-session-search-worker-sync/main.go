@@ -33,7 +33,7 @@ func main() {
 
 func configure(config *syncer.Config, dir string, askToken bool) error {
 	if !term.IsTerminal(int(os.Stdin.Fd())) {
-		return errors.New("initial setup requires a terminal; run llm-session-sync configure interactively")
+		return errors.New("initial setup requires a terminal; run llm-session-search-worker-sync configure interactively")
 	}
 	reader := bufio.NewReader(os.Stdin)
 	name := config.Device
@@ -88,7 +88,7 @@ func run() error {
 	defer stop()
 	flags := flag.NewFlagSet(command, flag.ContinueOnError)
 	flags.Usage = func() {
-		_, _ = fmt.Fprintln(flags.Output(), "Usage: llm-session-sync [sync|configure|login|search|show] [options]\nWith no command, configure if needed and sync continuously. Place flags before search words or session ID.")
+		_, _ = fmt.Fprintln(flags.Output(), "Usage: llm-session-search-worker-sync [sync|configure|login|search|show] [options]\nWith no command, configure if needed and sync continuously. Place flags before search words or session ID.")
 		flags.PrintDefaults()
 	}
 	showVersion := flags.Bool("version", false, "Print version and exit")
@@ -145,7 +145,7 @@ func run() error {
 		config.Token = ""
 	}
 	if config.URL == "" {
-		return errors.New("worker URL is not configured; run llm-session-sync configure -url <url from settings.json>")
+		return errors.New("worker URL is not configured; run llm-session-search-worker-sync configure -url <url from settings.json>")
 	}
 	client, err := syncer.NewClient(config.URL)
 	if err != nil {

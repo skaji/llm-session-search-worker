@@ -301,7 +301,12 @@ test("Go CLI sync works against the Worker", async () => {
       payload: { role: "user", content: [{ type: "input_text", text }] },
     }) + "\n";
   await writeFile(source, row("cliunique alpha"));
-  await exec("go", ["build", "-o", binary, "./cmd/llm-session-sync"]);
+  await exec("go", [
+    "build",
+    "-o",
+    binary,
+    "./cmd/llm-session-search-worker-sync",
+  ]);
   const options = [
     "-data-dir",
     configDir,

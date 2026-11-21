@@ -1,9 +1,9 @@
 version: 2
-project_name: llm-session-sync
+project_name: llm-session-search-worker-sync
 
 builds:
-  - main: ./cmd/llm-session-sync
-    binary: llm-session-sync
+  - main: ./cmd/llm-session-search-worker-sync
+    binary: llm-session-search-worker-sync
     env:
       - CGO_ENABLED=0
     ldflags:
