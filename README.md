@@ -290,6 +290,8 @@ goreleaser check
 goreleaser release --snapshot --clean
 ```
 
+GoReleaser writes its output to `release-dist/`.
+
 ## Message display
 
 Session pages display up to 40 messages per page.

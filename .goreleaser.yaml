@@ -1,5 +1,6 @@
 version: 2
 project_name: llm-session-search-worker-sync
+dist: release-dist
 
 builds:
   - main: ./cmd/llm-session-search-worker-sync
