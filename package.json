@@ -21,16 +21,22 @@
     "@cloudflare/workers-types": "^5.20260926.1",
     "esbuild": "^0.28.2",
     "linkedom": "^0.18.13",
-    "miniflare": "^5.20260925.0-alpha",
+    "miniflare": "^5.20261119.0-beta",
     "prettier": "^3.9.9",
     "typescript": "^7.0.2",
     "wrangler": "^4.138.0"
   },
   "dependencies": {
-    "@modelcontextprotocol/server": "2.0.0",
-    "agents": "^0.24.0",
+    "@modelcontextprotocol/server": "^2.4.0",
+    "agents": "^0.34.0",
     "micromark": "^4.0.3",
     "micromark-extension-gfm": "^3.0.0",
-    "zod": "^4.6.5"
+    "zod": "^4.6.7"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true,
+    "workerd@1.20261119.1": true,
+    "core-js-pure": false,
+    "fsevents": false
   }
 }
